@@ -5,17 +5,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.suapp.dcdownloader.listener.DownloadStatusListener;
 import com.suapp.dcdownloader.model.Request;
 import com.suapp.dcdownloader.task.thread.InitDownloadFileThread;
-
-import java.io.File;
 
 /**
  * Created by zhaojing on 17/12/21.
@@ -39,6 +35,7 @@ public class DownLoaderService extends Service {
     public static final String EXTRA_FILE_FINISHED_LENGTH = "extra_file_finished_length";
     public static boolean sIsStartDownload = false;
     private long mFileLength;
+    private long mCurDownloadFileLength;
 
     private Request mRequest;
     private static DownloadStatusListener sDownloadStatusListener;
@@ -74,6 +71,7 @@ public class DownLoaderService extends Service {
 
                     if (!sIsStartDownload) {
                         sIsStartDownload = true;
+                        mCurDownloadFileLength = 0;
                         mRequest = (Request) intent.getSerializableExtra(EXTRA_DOWNLOAD_REQUEST);
                         new InitDownloadFileThread(DownLoaderService.this, mRequest).start();
                     } else {
@@ -135,10 +133,12 @@ public class DownLoaderService extends Service {
                     if (mRequest == null) {
                         break;
                     } else {
-                        long finish = intent.getLongExtra(EXTRA_FILE_FINISHED_LENGTH, 0);
-                        sDownloadStatusListener.onProgress(finish);
+                        int finish = intent.getIntExtra(EXTRA_FILE_FINISHED_LENGTH, 0);
+                        mCurDownloadFileLength += finish;
                         if (mFileLength > 0) {
-                            sDownloadStatusListener.onPercentProgress((int) ((float) finish / (float) mFileLength * 100));
+                            sDownloadStatusListener.onPercentProgress((int) (((float)mCurDownloadFileLength / (float)mFileLength) * 100));
+                            sDownloadStatusListener.onProgress(mCurDownloadFileLength);
+
                         }
                     }
                     break;

@@ -52,16 +52,14 @@ public class AutoDownloadThread extends Thread {
             //开始下载（部分下载返回码为206）
             if (conn.getResponseCode() == 206 || conn.getResponseCode() == 200) {
                 inputStream = conn.getInputStream();
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[4096];
                 int len = -1;
                 int currTime = (int) System.currentTimeMillis();
                 while ((len = inputStream.read(buffer)) != -1) {
                     raFile.write(buffer, 0, len);
-                    mFinishedLength += len;
-                    if (System.currentTimeMillis() - currTime > 250) {
+                    if (System.currentTimeMillis() - currTime > 200) {
                         currTime = (int) System.currentTimeMillis();
-                        update.putExtra(EXTRA_FILE_FINISHED_LENGTH, mFinishedLength);
-                        update.putExtra("ASD", getName());
+                        update.putExtra(EXTRA_FILE_FINISHED_LENGTH, len);
                         mContext.sendBroadcast(update);
                     }
                 }

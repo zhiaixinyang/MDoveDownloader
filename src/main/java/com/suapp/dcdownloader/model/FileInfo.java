@@ -22,6 +22,7 @@ public class FileInfo implements Serializable {
         mStartLocation = startLocation;
         mEndLocation = endLocation;
         mFileUrl = fileUrl;
+        mFileLength = fileLength;
     }
 
 }
