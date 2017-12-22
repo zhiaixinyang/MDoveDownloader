@@ -39,7 +39,7 @@ public class InitDownloadFileThread extends Thread {
             conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(3000);
             conn.setRequestMethod("GET");
-            int length = -1;
+            long length = -1;
 
             if (conn.getResponseCode() == 200 || conn.getResponseCode() == 206) {
                 //获取文件长度
@@ -62,23 +62,23 @@ public class InitDownloadFileThread extends Thread {
             raf = new RandomAccessFile(file, "rwd");
             //设置本地文件长度
             raf.setLength(length);
+
+            Intent startDownload = new Intent(DownLoaderService.ACTION_START_DOWNLOAD_FILE);
+            startDownload.putExtra(DownLoaderService.EXTRA_FILE_LOCATION, file.getAbsolutePath());
+            startDownload.putExtra(DownLoaderService.EXTRA_FILE_LENGTH, length);
+            mContext.sendBroadcast(startDownload);
+
             if (mRequest.getThreadCount() < 1) {
                 //开始下载文件
-                Intent startDownload = new Intent(DownLoaderService.ACTION_START_DOWNLOAD_FILE);
-                mContext.sendBroadcast(startDownload);
-
                 FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, length, length, mRequest.getFileName(), mRequest.getFileLocation());
-                List<FileInfo> fileInfos=new ArrayList<>();
+                List<FileInfo> fileInfos = new ArrayList<>();
                 fileInfos.add(fileInfo);
                 new RealDownloadTask(mContext, fileInfos).autoDownload();
             } else {
                 //开始下载文件（多线程下载）
                 long block = length % mRequest.getThreadCount() == 0 ? length / mRequest.getThreadCount()
                         : length / mRequest.getThreadCount() + 1;
-
-                Intent startDownload = new Intent(DownLoaderService.ACTION_START_DOWNLOAD_FILE);
-                mContext.sendBroadcast(startDownload);
-                List<FileInfo> fileInfos=new ArrayList<>();
+                List<FileInfo> fileInfos = new ArrayList<>();
                 for (int i = 0; i < mRequest.getThreadCount(); i++) {
                     long start = i * block;
                     long end = start + block >= length ? length : start + block - 1;

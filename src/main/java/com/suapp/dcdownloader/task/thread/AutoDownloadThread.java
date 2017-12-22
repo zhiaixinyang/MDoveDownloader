@@ -58,11 +58,10 @@ public class AutoDownloadThread extends Thread {
                 while ((len = inputStream.read(buffer)) != -1) {
                     raFile.write(buffer, 0, len);
                     mFinishedLength += len;
-                    //把下载进度以广播的形式发送出去
-                    if (System.currentTimeMillis() - currTime > 200) {
-                        //每隔0.2秒发送一次广播
+                    if (System.currentTimeMillis() - currTime > 250) {
                         currTime = (int) System.currentTimeMillis();
                         update.putExtra(EXTRA_FILE_FINISHED_LENGTH, mFinishedLength);
+                        update.putExtra("ASD", getName());
                         mContext.sendBroadcast(update);
                     }
                 }
