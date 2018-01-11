@@ -1,7 +1,6 @@
 package com.suapp.dcdownloader.model;
 
 import android.content.Context;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -17,7 +16,13 @@ public class Request implements Serializable {
     private String mFileUrl;
     private int mThreadCount;
     private String mFileName;
-    private final static String sDefaultDirName="DcDownloader";
+    private final static String sDefaultDirName = "DcDownloader";
+    private DownloadMode mDownloadMode;
+
+    public enum DownloadMode {
+        AUTO,
+        SAVE
+    }
 
     public Request(Builder builder) {
         mFileUrl = builder.mFileUrl;
@@ -25,6 +30,7 @@ public class Request implements Serializable {
         if (!TextUtils.isEmpty(builder.mFileLocation)) {
             mFileLocation = builder.mFileLocation;
         }
+        mDownloadMode = builder.mMode;
         mFileName = builder.mFileName;
     }
 
@@ -44,11 +50,16 @@ public class Request implements Serializable {
         return mFileName;
     }
 
+    public DownloadMode getDownloadMode() {
+        return mDownloadMode;
+    }
+
     public static class Builder {
         private String mFileUrl;
         private int mThreadCount;
         private String mFileLocation;
         private String mFileName;
+        private DownloadMode mMode;
 
         public Builder setFileUrl(@NonNull String fileUrl) {
             mFileUrl = fileUrl;
@@ -57,6 +68,11 @@ public class Request implements Serializable {
 
         public Builder setThreadCount(@NonNull int threadCount) {
             mThreadCount = threadCount;
+            return this;
+        }
+
+        public Builder setDownloadMode(DownloadMode mode) {
+            mMode = mode;
             return this;
         }
 

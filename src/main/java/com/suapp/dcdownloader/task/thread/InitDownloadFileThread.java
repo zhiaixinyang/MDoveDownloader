@@ -6,7 +6,8 @@ import android.content.Intent;
 import com.suapp.dcdownloader.model.FileInfo;
 import com.suapp.dcdownloader.model.Request;
 import com.suapp.dcdownloader.service.DownLoaderService;
-import com.suapp.dcdownloader.task.RealDownloadTask;
+import com.suapp.dcdownloader.task.AutoDownloadTask;
+import com.suapp.dcdownloader.task.SaveDownloadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,25 +69,31 @@ public class InitDownloadFileThread extends Thread {
             startDownload.putExtra(DownLoaderService.EXTRA_FILE_LENGTH, length);
             mContext.sendBroadcast(startDownload);
 
-            if (mRequest.getThreadCount() < 1) {
-                //开始下载文件
-                FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, length, length, mRequest.getFileName(), mRequest.getFileLocation());
-                List<FileInfo> fileInfos = new ArrayList<>();
-                fileInfos.add(fileInfo);
-                new RealDownloadTask(mContext, fileInfos).autoDownload();
-            } else {
-                //开始下载文件（多线程下载）
-                long block = length % mRequest.getThreadCount() == 0 ? length / mRequest.getThreadCount()
-                        : length / mRequest.getThreadCount() + 1;
-                List<FileInfo> fileInfos = new ArrayList<>();
-                for (int i = 0; i < mRequest.getThreadCount(); i++) {
-                    long start = i * block;
-                    long end = start + block >= length ? length : start + block - 1;
-                    FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), start, end, length, mRequest.getFileName(), mRequest.getFileLocation());
+            if (mRequest.getDownloadMode() == Request.DownloadMode.AUTO) {
+                if (mRequest.getThreadCount() < 1) {
+                    //开始下载文件
+                    FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, length, length, mRequest.getFileName(), mRequest.getFileLocation());
+                    List<FileInfo> fileInfos = new ArrayList<>();
                     fileInfos.add(fileInfo);
+                    new AutoDownloadTask(mContext, fileInfos).autoDownload();
+                } else {
+                    //开始下载文件（多线程下载）
+                    long block = length % mRequest.getThreadCount() == 0 ? length / mRequest.getThreadCount()
+                            : length / mRequest.getThreadCount() + 1;
+                    List<FileInfo> fileInfos = new ArrayList<>();
+                    for (int i = 0; i < mRequest.getThreadCount(); i++) {
+                        long start = i * block;
+                        long end = start + block >= length ? length : start + block - 1;
+                        FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), start, end, length, mRequest.getFileName(), mRequest.getFileLocation());
+                        fileInfos.add(fileInfo);
+                    }
+                    new AutoDownloadTask(mContext, fileInfos).autoDownload();
                 }
-                new RealDownloadTask(mContext, fileInfos).autoDownload();
+            } else if (mRequest.getDownloadMode() == Request.DownloadMode.SAVE) {
+                FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, length, length, mRequest.getFileName(), mRequest.getFileLocation());
+                new SaveDownloadTask(mContext, fileInfo).saveDownload();
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             Intent initErr = new Intent(DownLoaderService.ACTION_ERROR_INIT_DOWNLOAD_FILE);

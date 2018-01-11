@@ -16,13 +16,13 @@ import java.util.concurrent.Executors;
  * Created by zhaojing on 2017/12/22.
  */
 
-public class RealDownloadTask {
+public class AutoDownloadTask {
     private List<FileInfo> mFileBeans;
     private Context mContext;
     private final static int EXECUTOR_CORE_COUNT = 5;
     private ExecutorService downloadExecutor = Executors.newFixedThreadPool(EXECUTOR_CORE_COUNT);
 
-    public RealDownloadTask(Context context, List<FileInfo> fileBeans) {
+    public AutoDownloadTask(Context context, List<FileInfo> fileBeans) {
         mFileBeans = fileBeans;
         mContext = context;
     }

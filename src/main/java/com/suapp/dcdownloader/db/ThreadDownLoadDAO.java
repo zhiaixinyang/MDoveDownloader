@@ -10,8 +10,14 @@ import java.util.List;
 
 public interface ThreadDownLoadDAO {
     void insertThread(ThreadDownLoadInfo threadDownLoadInfo);
+
     void deleteThread(String url, int threadId);
+
     void updateThread(String url, int threadId, long finishedLength);
+
+    void deleteThread(String url);
+
     List<ThreadDownLoadInfo> getThreadList(String url);
+
     boolean isExists(String url, int threadId);
 }

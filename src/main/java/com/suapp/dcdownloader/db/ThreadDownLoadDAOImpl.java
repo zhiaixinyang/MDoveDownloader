@@ -3,6 +3,7 @@ package com.suapp.dcdownloader.db;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.suapp.dcdownloader.model.ThreadDownLoadInfo;
 
@@ -51,6 +52,17 @@ public class ThreadDownLoadDAOImpl implements ThreadDownLoadDAO {
                         COLUMN_THREAD_ID + " = ?",
                 new Object[]{url, threadId});
         writableDatabase.close();
+    }
+
+    @Override
+    public synchronized void deleteThread(String url) {
+        Log.e("deleteThread: ", "deleteThread");
+        SQLiteDatabase db = mDBHelper.getWritableDatabase();
+        db.execSQL("delete from " +
+                        TABLE_NAME + " where " +
+                        COLUMN_URL + " = ?",
+                new Object[]{url});
+        db.close();
     }
 
     @Override
