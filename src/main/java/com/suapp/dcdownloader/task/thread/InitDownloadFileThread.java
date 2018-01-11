@@ -70,25 +70,7 @@ public class InitDownloadFileThread extends Thread {
             mContext.sendBroadcast(startDownload);
 
             if (mRequest.getDownloadMode() == Request.DownloadMode.AUTO) {
-                if (mRequest.getThreadCount() < 1) {
-                    //开始下载文件
-                    FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, length, length, mRequest.getFileName(), mRequest.getFileLocation());
-                    List<FileInfo> fileInfos = new ArrayList<>();
-                    fileInfos.add(fileInfo);
-                    new AutoDownloadTask(mContext, fileInfos).autoDownload();
-                } else {
-                    //开始下载文件（多线程下载）
-                    long block = length % mRequest.getThreadCount() == 0 ? length / mRequest.getThreadCount()
-                            : length / mRequest.getThreadCount() + 1;
-                    List<FileInfo> fileInfos = new ArrayList<>();
-                    for (int i = 0; i < mRequest.getThreadCount(); i++) {
-                        long start = i * block;
-                        long end = start + block >= length ? length : start + block - 1;
-                        FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), start, end, length, mRequest.getFileName(), mRequest.getFileLocation());
-                        fileInfos.add(fileInfo);
-                    }
-                    new AutoDownloadTask(mContext, fileInfos).autoDownload();
-                }
+                new AutoDownloadTask(mContext, mRequest, length).autoDownload();
             } else if (mRequest.getDownloadMode() == Request.DownloadMode.SAVE) {
                 FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, length, length, mRequest.getFileName(), mRequest.getFileLocation());
                 new SaveDownloadTask(mContext, fileInfo).saveDownload();

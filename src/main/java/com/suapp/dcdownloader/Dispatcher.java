@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.suapp.dcdownloader.model.Request;
-import com.suapp.dcdownloader.service.DownLoaderService;
 import com.suapp.dcdownloader.task.thread.InitDownloadFileThread;
 
 import java.util.ArrayDeque;
