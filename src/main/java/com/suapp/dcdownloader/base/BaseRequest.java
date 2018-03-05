@@ -32,7 +32,7 @@ public abstract class BaseRequest<R extends BaseRequest> {
 
     public abstract <T> void request(@NonNull DcCallback<T> callback);
 
-    protected abstract <T> Observable<T> execute();
+    protected abstract Observable execute();
     protected abstract <T> void execute(@NonNull DcCallback<T> callback);
 
 

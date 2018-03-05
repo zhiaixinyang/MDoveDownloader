@@ -71,8 +71,8 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     }
 
     @Override
-    protected <T> Observable<T> execute() {
-        return (Observable<T>) mApiService
+    protected  Observable execute() {
+        return mApiService
                 .downFile(mDownLoadUrl, mParams)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
@@ -118,7 +118,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
             try {
                 int readLen;
                 int downloadSize = 0;
-                byte[] buffer = new byte[8192];
+                byte[] buffer = new byte[4096];
 
                 DownLoadProgress downProgress = new DownLoadProgress();
                 inputStream = resp.byteStream();
@@ -134,6 +134,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                     sub.onNext(downProgress);
                 }
                 outputStream.flush();
+                downProgress.setDownloadFile(saveFile);
                 sub.onComplete();
             } finally {
                 if (inputStream != null) {

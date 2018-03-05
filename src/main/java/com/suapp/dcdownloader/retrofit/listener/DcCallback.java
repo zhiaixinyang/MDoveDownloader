@@ -5,6 +5,8 @@ package com.suapp.dcdownloader.retrofit.listener;
  */
 
 public abstract class DcCallback<T> {
+    public abstract void onProgress(T progressData);
+
     public abstract void onSuccess(T progressData);
 
     public abstract void onFail(String errMsg);

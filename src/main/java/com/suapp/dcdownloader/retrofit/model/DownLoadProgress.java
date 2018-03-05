@@ -3,6 +3,7 @@ package com.suapp.dcdownloader.retrofit.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.text.NumberFormat;
 
@@ -13,6 +14,7 @@ import java.text.NumberFormat;
 public class DownLoadProgress implements Parcelable {
     private long mTotalSize;
     private long mDownloadSize;
+    private File mDownloadFile;
 
     public DownLoadProgress() {
     }
@@ -43,6 +45,14 @@ public class DownLoadProgress implements Parcelable {
     public DownLoadProgress setDownloadSize(long downloadSize) {
         mDownloadSize = downloadSize;
         return this;
+    }
+
+    public void setDownloadFile(File downloadFile) {
+        mDownloadFile = downloadFile;
+    }
+
+    public File getDownloadFile() {
+        return mDownloadFile;
     }
 
     /**

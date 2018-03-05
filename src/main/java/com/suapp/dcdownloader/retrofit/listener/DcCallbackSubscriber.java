@@ -19,7 +19,7 @@ public class DcCallbackSubscriber<T> extends DisposableObserver<T> {
     @Override
     public void onNext(T t) {
         mDownloadData = t;
-        mCallback.onSuccess(t);
+        mCallback.onProgress(t);
     }
 
     @Override
