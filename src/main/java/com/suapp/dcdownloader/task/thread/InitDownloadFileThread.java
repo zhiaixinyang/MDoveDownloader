@@ -70,10 +70,10 @@ public class InitDownloadFileThread extends Thread {
             mContext.sendBroadcast(startDownload);
 
             if (mRequest.getDownloadMode() == Request.DownloadMode.AUTO) {
-                new AutoDownloadTask(mContext, mRequest, length).autoDownload();
+                new AutoDownloadTask(mContext, mRequest, length).startDownload();
             } else if (mRequest.getDownloadMode() == Request.DownloadMode.SAVE) {
                 FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, length, length, mRequest.getFileName(), mRequest.getFileLocation());
-                new SaveDownloadTask(mContext, fileInfo).saveDownload();
+                new SaveDownloadTask(mContext, fileInfo).startDownload();
             }
 
         } catch (Exception e) {

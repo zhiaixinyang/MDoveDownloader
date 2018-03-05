@@ -102,6 +102,9 @@ public class DownLoaderService extends Service {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mStatusReceiver);
+        if (sDownloadStatusListener != null) {
+            sDownloadStatusListener = null;
+        }
     }
 
     public static void setDownloadStatusListener(DownloadStatusListener downloadStatusListener) {

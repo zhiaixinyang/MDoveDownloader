@@ -7,6 +7,7 @@ import android.content.Intent;
 import com.suapp.dcdownloader.model.FileInfo;
 import com.suapp.dcdownloader.model.Request;
 import com.suapp.dcdownloader.service.DownLoaderService;
+import com.suapp.dcdownloader.task.base.IDownloadTask;
 import com.suapp.dcdownloader.task.thread.AutoDownloadThread;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.concurrent.Executors;
  * Created by zhaojing on 2017/12/22.
  */
 
-public class AutoDownloadTask {
+public class AutoDownloadTask implements IDownloadTask {
     private List<FileInfo> mFileBeans;
     private Context mContext;
     private final static int EXECUTOR_CORE_COUNT = 5;
@@ -32,7 +33,7 @@ public class AutoDownloadTask {
         mLength=length;
     }
 
-    public void autoDownload() {
+    private void autoDownload() {
         if (mRequest.getThreadCount() < 1) {
             //开始下载文件
             FileInfo fileInfo = new FileInfo(mRequest.getFileUrl(), 0, mLength, mLength, mRequest.getFileName(), mRequest.getFileLocation());
@@ -63,5 +64,10 @@ public class AutoDownloadTask {
                 break;
             }
         }
+    }
+
+    @Override
+    public void startDownload() {
+        autoDownload();
     }
 }

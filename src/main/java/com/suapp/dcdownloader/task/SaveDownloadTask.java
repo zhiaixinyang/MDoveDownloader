@@ -7,6 +7,7 @@ import com.suapp.dcdownloader.db.ThreadDownLoadDAOImpl;
 import com.suapp.dcdownloader.model.FileInfo;
 import com.suapp.dcdownloader.model.ThreadDownLoadInfo;
 import com.suapp.dcdownloader.service.DownLoaderService;
+import com.suapp.dcdownloader.task.base.IDownloadTask;
 
 import java.io.File;
 import java.io.InputStream;
@@ -24,7 +25,7 @@ import static com.suapp.dcdownloader.service.DownLoaderService.EXTRA_FILE_FINISH
  * Created by zhaojing on 2017/1/11.
  */
 
-public class SaveDownloadTask {
+public class SaveDownloadTask implements IDownloadTask {
     private FileInfo mFileBean;
     private Context mContext;
     private final static int EXECUTOR_CORE_COUNT = 5;
@@ -41,7 +42,7 @@ public class SaveDownloadTask {
         mThreadDAO = new ThreadDownLoadDAOImpl(mContext);
     }
 
-    public void saveDownload() {
+    private void saveDownload() {
         List<ThreadDownLoadInfo> threadInfos = mThreadDAO.getThreadList(mFileBean.mFileUrl);
 
         if (threadInfos.size() == 0) {
@@ -67,6 +68,11 @@ public class SaveDownloadTask {
             //添加线程到集合中
             mThreadList.add(downloadThread);
         }
+    }
+
+    @Override
+    public void startDownload() {
+        saveDownload();
     }
 
     class SaveDownloadThread extends Thread {
@@ -113,7 +119,7 @@ public class SaveDownloadTask {
                         mThreadInfo.mFinishedLength = mThreadInfo.mFinishedLength + len;
                         if (System.currentTimeMillis() - time > 1000) {//减少UI负载
                             time = System.currentTimeMillis();
-                            
+
                             update.putExtra(EXTRA_FILE_FINISHED_LENGTH, len);
                             mContext.sendBroadcast(update);
                         }
