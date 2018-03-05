@@ -75,7 +75,7 @@ public class DownLoadProgress implements Parcelable {
     /**
      * 获得格式化的状态字符串
      *
-     * @return example: 2MB/36MB
+     * @return example: 6MB/66MB
      */
     public String getFormatStatusString() {
         return getFormatDownloadSize() + "/" + getFormatTotalSize();
@@ -84,9 +84,9 @@ public class DownLoadProgress implements Parcelable {
     /**
      * 获得下载的百分比, 保留两位小数
      *
-     * @return example: 5.25%
+     * @return example: 66.66%
      */
-    public String getPercent() {
+    public String getFormatPercent() {
         String percent;
         Double result;
         if (mTotalSize == 0L) {
