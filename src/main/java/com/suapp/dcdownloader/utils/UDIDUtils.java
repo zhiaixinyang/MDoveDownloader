@@ -6,6 +6,9 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import com.suapp.dcdownloader.base.NativeLibraryLoader;
+import com.suapp.dcdownloader.base.PriorityThreadPool;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

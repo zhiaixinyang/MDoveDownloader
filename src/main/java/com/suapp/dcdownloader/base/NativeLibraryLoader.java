@@ -1,9 +1,12 @@
-package com.suapp.dcdownloader.utils;
+package com.suapp.dcdownloader.base;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.util.Log;
+
+import com.suapp.dcdownloader.utils.FileUtils;
+import com.suapp.dcdownloader.utils.IOUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;

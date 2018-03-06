@@ -1,4 +1,4 @@
-package com.suapp.dcdownloader.utils;
+package com.suapp.dcdownloader.base;
 
 import android.os.Process;
 

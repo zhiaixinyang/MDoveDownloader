@@ -1,10 +1,9 @@
 package com.suapp.dcdownloader.utils;
 
 import android.content.Context;
-import android.util.Base64;
 
 
-import com.suapp.dcdownloader.R;
+import com.suapp.dcdownloader.base.NativeLibraryLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
