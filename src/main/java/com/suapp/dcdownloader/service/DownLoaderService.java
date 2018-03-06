@@ -6,13 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.suapp.dcdownloader.Dispatcher;
 import com.suapp.dcdownloader.listener.DownloadStatusListener;
 import com.suapp.dcdownloader.model.Request;
-import com.suapp.dcdownloader.task.thread.InitDownloadFileThread;
+
+import io.reactivex.annotations.NonNull;
 
 /**
  * Created by zhaojing on 17/12/21.
@@ -92,7 +91,6 @@ public class DownLoaderService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;

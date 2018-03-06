@@ -11,6 +11,10 @@ def COMPILE_SDK_VERSION = hasProperty('COMPILE_SDK_VERSION') ? property('COMPILE
 def BUILD_TOOLS_VERSION = hasProperty('BUILD_TOOLS_VERSION') ? property('BUILD_TOOLS_VERSION') : getConfigProperty('BUILD_TOOLS_VERSION')
 def MIN_SDK_VERSION = hasProperty('MIN_SDK_VERSION') ? property('MIN_SDK_VERSION') : getConfigProperty('MIN_SDK_VERSION')
 def TARGET_SDK_VERSION = hasProperty('TARGET_SDK_VERSION') ? property('TARGET_SDK_VERSION') : getConfigProperty('TARGET_SDK_VERSION')
+def RX_JAVA_2_VERSION = hasProperty('RX_JAVA_2_VERSION') ? property('RX_JAVA_2_VERSION') : getConfigProperty('RX_JAVA_2_VERSION') as String
+def RX_ANDROID_2_VERSION = hasProperty('RX_ANDROID_2_VERSION') ? property('RX_ANDROID_2_VERSION') : getConfigProperty('RX_ANDROID_2_VERSION') as String
+def RETROFIT_VERSION = hasProperty('RETROFIT_VERSION') ? property('RETROFIT_VERSION') : getConfigProperty('RETROFIT_VERSION') as String
+def OK_HTTP_VERSION = hasProperty('OK_HTTP_VERSION') ? property('OK_HTTP_VERSION') : getConfigProperty('OK_HTTP_VERSION') as String
 
 android {
     compileSdkVersion COMPILE_SDK_VERSION as int
@@ -22,6 +26,16 @@ android {
 
         versionCode 1
         versionName "1.0"
+
+        ndk {
+            abiFilters "x86", "armeabi", "armeabi-v7a"
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
     }
 
     buildTypes {
@@ -35,9 +49,14 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    implementation project(':su-android-base')
-
     testImplementation 'junit:junit:4.12'
 
+    implementation "com.android.support:support-annotations:$BUILD_TOOLS_VERSION"
+    implementation "io.reactivex.rxjava2:rxjava:$RX_JAVA_2_VERSION"
+    implementation "io.reactivex.rxjava2:rxandroid:$RX_ANDROID_2_VERSION"
+    implementation "com.squareup.okhttp3:okhttp:$OK_HTTP_VERSION"
+    implementation "com.squareup.okhttp3:logging-interceptor:$OK_HTTP_VERSION"
+    implementation "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
+    implementation "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$RETROFIT_VERSION"
 }

@@ -7,12 +7,12 @@ import android.text.TextUtils;
 import com.suapp.dcdownloader.base.BaseRequest;
 import com.suapp.dcdownloader.config.FileConfig;
 import com.suapp.dcdownloader.config.UrlConfig;
+import com.suapp.dcdownloader.network.SURetrofitFactory;
 import com.suapp.dcdownloader.retrofit.api.ApiService;
 import com.suapp.dcdownloader.retrofit.listener.DcCallback;
 import com.suapp.dcdownloader.retrofit.listener.DcDownloadSubscriber;
 import com.suapp.dcdownloader.retrofit.model.DownLoadProgress;
 import com.suapp.dcdownloader.utils.FileUtils;
-import com.suapp.suandroidbase.network.SURetrofitFactory;
 
 import org.reactivestreams.Publisher;
 

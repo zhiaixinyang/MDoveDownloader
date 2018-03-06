@@ -1,7 +1,5 @@
 package com.suapp.dcdownloader.base;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
 
 import com.suapp.dcdownloader.retrofit.api.ApiService;
 import com.suapp.dcdownloader.retrofit.listener.DcCallback;
@@ -11,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.annotations.NonNull;
 
 /**
  * Created by zhaojing on 2018/3/5.

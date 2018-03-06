@@ -1,11 +1,12 @@
 package com.suapp.dcdownloader.model;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import java.io.File;
 import java.io.Serializable;
+
+import io.reactivex.annotations.NonNull;
 
 /**
  * Created by zhaojing on 17/12/21.
