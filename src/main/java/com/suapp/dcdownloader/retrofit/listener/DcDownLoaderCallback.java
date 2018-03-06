@@ -7,5 +7,7 @@ import com.suapp.dcdownloader.retrofit.model.DownLoadProgress;
  */
 
 public abstract class DcDownLoaderCallback extends DcCallback<DownLoadProgress> {
-
+    @Override
+    public void onPreDownload(DownLoadProgress progressData) {
+    }
 }

@@ -10,4 +10,6 @@ public abstract class DcCallback<T> {
     public abstract void onSuccess(T progressData);
 
     public abstract void onFail(String errMsg);
+
+    public abstract void onPreDownload(T progressData);
 }

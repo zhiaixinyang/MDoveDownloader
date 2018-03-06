@@ -2,6 +2,8 @@ package com.suapp.dcdownloader.retrofit.listener;
 
 import android.support.annotation.NonNull;
 
+import com.suapp.dcdownloader.retrofit.model.DownLoadProgress;
+
 import io.reactivex.observers.DisposableObserver;
 
 /**
@@ -18,6 +20,10 @@ public class DcCallbackSubscriber<T> extends DisposableObserver<T> {
 
     @Override
     public void onNext(T t) {
+        if (t instanceof DownLoadProgress && ((DownLoadProgress) t).getDownloadSize() <= 0
+                && ((DownLoadProgress) t).getStream() != null) {
+            mCallback.onPreDownload(t);
+        }
         mDownloadData = t;
         mCallback.onProgress(t);
     }

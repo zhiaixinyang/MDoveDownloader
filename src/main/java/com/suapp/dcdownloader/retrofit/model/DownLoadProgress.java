@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.io.File;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.text.NumberFormat;
 
@@ -15,6 +16,7 @@ public class DownLoadProgress implements Parcelable {
     private long mTotalSize;
     private long mDownloadSize;
     private File mDownloadFile;
+    private InputStream mInputStream;
 
     public DownLoadProgress() {
     }
@@ -27,6 +29,14 @@ public class DownLoadProgress implements Parcelable {
     protected DownLoadProgress(Parcel in) {
         mTotalSize = in.readLong();
         mDownloadSize = in.readLong();
+    }
+
+    public void setStream(InputStream inputStream) {
+        mInputStream = inputStream;
+    }
+
+    public InputStream getStream() {
+        return mInputStream;
     }
 
     public long getTotalSize() {
