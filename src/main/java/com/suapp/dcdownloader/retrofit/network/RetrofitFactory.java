@@ -2,9 +2,6 @@ package com.suapp.dcdownloader.retrofit.network;
 
 import android.content.Context;
 
-import com.suapp.dcdownloader.utils.SystemUtils;
-import com.suapp.dcdownloader.utils.UDIDUtils;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

@@ -2,6 +2,7 @@ package com.suapp.dcdownloader.httpurlconnect.task;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 
 
 import com.suapp.dcdownloader.httpurlconnect.model.FileInfo;
@@ -27,10 +28,10 @@ public class AutoDownloadTask implements IDownloadTask {
     private long mLength;
     private Request mRequest;
 
-    public AutoDownloadTask(Context context, Request request,long length) {
+    public AutoDownloadTask(Context context, @NonNull Request request, @NonNull long length) {
         mRequest = request;
         mContext = context;
-        mLength=length;
+        mLength = length;
     }
 
     private void autoDownload() {
@@ -60,6 +61,7 @@ public class AutoDownloadTask implements IDownloadTask {
         while (true) {
             if (downloadExecutor.isTerminated()) {
                 Intent success = new Intent(DownLoaderService.ACTION_SUCCESS_DOWNLOAD_FILE);
+                success.putExtra(DownLoaderService.EXTRA_FILE_URL, mRequest.getFileUrl());
                 mContext.sendBroadcast(success);
                 break;
             }

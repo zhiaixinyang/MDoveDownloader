@@ -65,19 +65,19 @@ public class AutoDownloadThread extends Thread {
                 }
             } else {
                 Intent downloadErr = new Intent(DownLoaderService.ACTION_ERROR_DOWNLOAD_FILE);
+                downloadErr.putExtra(DownLoaderService.EXTRA_FILE_URL, mFileInfo.mFileUrl);
                 mContext.sendBroadcast(downloadErr);
-                DownLoaderService.sIsStartDownload = false;
                 return;
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
             Intent downloadErr = new Intent(DownLoaderService.ACTION_ERROR_DOWNLOAD_FILE);
+            downloadErr.putExtra(DownLoaderService.EXTRA_FILE_URL, mFileInfo.mFileUrl);
             mContext.sendBroadcast(downloadErr);
-            DownLoaderService.sIsStartDownload = false;
         } catch (IOException e) {
             Intent downloadErr = new Intent(DownLoaderService.ACTION_ERROR_DOWNLOAD_FILE);
+            downloadErr.putExtra(DownLoaderService.EXTRA_FILE_URL, mFileInfo.mFileUrl);
             mContext.sendBroadcast(downloadErr);
-            DownLoaderService.sIsStartDownload = false;
             e.printStackTrace();
         } finally {
             try {

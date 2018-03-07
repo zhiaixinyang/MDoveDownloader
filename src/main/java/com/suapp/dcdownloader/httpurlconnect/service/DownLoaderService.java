@@ -6,10 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
+import android.text.TextUtils;
 
 import com.suapp.dcdownloader.httpurlconnect.Dispatcher;
 import com.suapp.dcdownloader.httpurlconnect.listener.DownloadStatusListener;
 import com.suapp.dcdownloader.httpurlconnect.model.Request;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.annotations.NonNull;
 
@@ -31,19 +35,22 @@ public class DownLoaderService extends Service {
 
     public static final String EXTRA_DOWNLOAD_REQUEST = "extra_download_request";
     public static final String EXTRA_FILE_LOCATION = "extra_file_location";
+    public static final String EXTRA_FILE_URL = "extra_file_url";
     public static final String EXTRA_FILE_LENGTH = "extra_file_length";
     public static final String EXTRA_FILE_FINISHED_LENGTH = "extra_file_finished_length";
-    public static boolean sIsStartDownload = false;
     private long mFileLength;
     private long mCurDownloadFileLength;
 
     private Request mRequest;
     private static DownloadStatusListener sDownloadStatusListener;
     private Dispatcher mDispatcher;
+    private List<String> mDownloadingUrls;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mDownloadingUrls = new ArrayList<>();
+
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_START_DOWNLOAD_FILE);
         intentFilter.addAction(ACTION_START_INIT_DOWNLOAD_FILE);
@@ -72,8 +79,7 @@ public class DownLoaderService extends Service {
                     Intent startInit = new Intent(ACTION_START_INIT_DOWNLOAD_FILE);
                     sendBroadcast(startInit);
 
-                    if (!sIsStartDownload) {
-                        sIsStartDownload = true;
+                    if (!isExistUrl(mRequest.getFileUrl())) {
                         mCurDownloadFileLength = 0;
                         mRequest = (Request) intent.getSerializableExtra(EXTRA_DOWNLOAD_REQUEST);
                         mDispatcher.enqueue(DownLoaderService.this, mRequest);
@@ -105,11 +111,20 @@ public class DownLoaderService extends Service {
         }
     }
 
+    private boolean isExistUrl(String url) {
+        for (String existUrl : mDownloadingUrls) {
+            if (TextUtils.equals(existUrl, url)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void setDownloadStatusListener(DownloadStatusListener downloadStatusListener) {
         sDownloadStatusListener = downloadStatusListener;
     }
 
-    BroadcastReceiver mStatusReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mStatusReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() == null || sDownloadStatusListener == null) {
@@ -123,6 +138,9 @@ public class DownLoaderService extends Service {
                 case DownLoaderService.ACTION_START_DOWNLOAD_FILE: {
                     String fileLocation = intent.getStringExtra(EXTRA_FILE_LOCATION);
                     mFileLength = intent.getLongExtra(EXTRA_FILE_LENGTH, 0);
+                    String fileUrl = intent.getStringExtra(EXTRA_FILE_URL);
+                    mDownloadingUrls.add(fileUrl);
+
                     sDownloadStatusListener.onStartDownload(fileLocation, mFileLength);
                     break;
                 }
@@ -131,6 +149,8 @@ public class DownLoaderService extends Service {
                     break;
                 }
                 case DownLoaderService.ACTION_SUCCESS_DOWNLOAD_FILE: {
+                    String fileUrl = intent.getStringExtra(EXTRA_FILE_URL);
+                    mDownloadingUrls.remove(fileUrl);
                     sDownloadStatusListener.onDownloadSuccess();
                     break;
                 }

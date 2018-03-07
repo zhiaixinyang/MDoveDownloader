@@ -135,8 +135,8 @@ public class SaveDownloadTask implements IDownloadTask {
                 connection.disconnect();
             } catch (Exception e) {
                 Intent downloadErr = new Intent(DownLoaderService.ACTION_ERROR_DOWNLOAD_FILE);
+                downloadErr.putExtra(DownLoaderService.EXTRA_FILE_URL, mThreadInfo.mUrl);
                 mContext.sendBroadcast(downloadErr);
-                DownLoaderService.sIsStartDownload = false;
                 e.printStackTrace();
             }
         }
@@ -155,6 +155,8 @@ public class SaveDownloadTask implements IDownloadTask {
             //删除线程信息
             mThreadDAO.deleteThread(mFileBean.mFileUrl);
             Intent success = new Intent(DownLoaderService.ACTION_SUCCESS_DOWNLOAD_FILE);
+            success.putExtra(DownLoaderService.EXTRA_FILE_URL, mFileBean.mFileUrl);
+
             mContext.sendBroadcast(success);
         }
     }

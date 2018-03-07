@@ -10,11 +10,11 @@ import com.suapp.dcdownloader.httpurlconnect.service.DownLoaderService;
  * Created by zhaojing on 17/12/22.
  */
 
-public class DownloadManager {
+public class HucDownloader {
     private Request mRequest;
     private static DownloadStatusListener sDownloadStatusListener;
 
-    private DownloadManager() {
+    private HucDownloader() {
     }
 
     public static void enqueue(Request request) {

@@ -45,8 +45,8 @@ public class InitDownloadFileThread extends Thread {
                 length = conn.getContentLength();
             } else {
                 Intent initErr = new Intent(DownLoaderService.ACTION_ERROR_INIT_DOWNLOAD_FILE);
+                initErr.putExtra(DownLoaderService.EXTRA_FILE_URL, mRequest.getFileUrl());
                 mContext.sendBroadcast(initErr);
-                DownLoaderService.sIsStartDownload = false;
                 return;
             }
             if (length < 0) {
@@ -64,6 +64,7 @@ public class InitDownloadFileThread extends Thread {
 
             Intent startDownload = new Intent(DownLoaderService.ACTION_START_DOWNLOAD_FILE);
             startDownload.putExtra(DownLoaderService.EXTRA_FILE_LOCATION, file.getAbsolutePath());
+            startDownload.putExtra(DownLoaderService.EXTRA_FILE_URL, mRequest.getFileUrl());
             startDownload.putExtra(DownLoaderService.EXTRA_FILE_LENGTH, length);
             mContext.sendBroadcast(startDownload);
 
@@ -77,8 +78,9 @@ public class InitDownloadFileThread extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
             Intent initErr = new Intent(DownLoaderService.ACTION_ERROR_INIT_DOWNLOAD_FILE);
+            initErr.putExtra(DownLoaderService.EXTRA_FILE_URL, mRequest.getFileUrl());
             mContext.sendBroadcast(initErr);
-            DownLoaderService.sIsStartDownload = false;
+
         } finally {
             try {
                 if (conn != null) {
