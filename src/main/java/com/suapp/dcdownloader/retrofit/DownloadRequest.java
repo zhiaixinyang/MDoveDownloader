@@ -7,7 +7,7 @@ import android.text.TextUtils;
 import com.suapp.dcdownloader.base.BaseRequest;
 import com.suapp.dcdownloader.config.FileConfig;
 import com.suapp.dcdownloader.config.UrlConfig;
-import com.suapp.dcdownloader.network.SURetrofitFactory;
+import com.suapp.dcdownloader.retrofit.network.SURetrofitFactory;
 import com.suapp.dcdownloader.retrofit.api.ApiService;
 import com.suapp.dcdownloader.retrofit.listener.DcCallback;
 import com.suapp.dcdownloader.retrofit.listener.DcDownloadSubscriber;
@@ -107,7 +107,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     @Override
     protected void initNet() {
         if (mApiService == null) {
-            mApiService = SURetrofitFactory.create(mContext, UrlConfig.getHostApi(), false, ApiService.class);
+            mApiService = SURetrofitFactory.create(mContext, UrlConfig.getHostApi(), ApiService.class);
         }
     }
 
