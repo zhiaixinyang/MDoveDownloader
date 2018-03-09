@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.suapp.dcdownloader.base.BaseRequest;
+import com.suapp.dcdownloader.base.MimeType;
 import com.suapp.dcdownloader.config.FileConfig;
 import com.suapp.dcdownloader.config.UrlConfig;
 import com.suapp.dcdownloader.retrofit.network.SURetrofitFactory;
@@ -42,11 +43,6 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     private String mFileLocation;
     private String mFileName = null;
     private Context mContext;
-
-    //文件类型判断
-    private static String APK_CONTENTTYPE = "application/vnd.android.package-archive";
-    private static String PNG_CONTENTTYPE = "image/png";
-    private static String JPG_CONTENTTYPE = "image/jpg";
 
     public DownloadRequest(Context context, String url) {
         mContext = context;
@@ -110,15 +106,17 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
         }
         //文件名后缀而已
         String fileSuffix = "";
-        String type = responseBody.contentType().toString();
-
-        if (type.equals(APK_CONTENTTYPE)) {
-            fileSuffix = ".apk";
-        } else if (type.equals(PNG_CONTENTTYPE)) {
-            fileSuffix = ".png";
-        } else if (type.equals(JPG_CONTENTTYPE)) {
-            fileSuffix = ".jpg";
+        String type ="";
+        if (responseBody.contentType() != null) {
+            type = responseBody.contentType().toString();
         }
+
+        if (!TextUtils.isEmpty(type)) {
+            if (!TextUtils.isEmpty(MimeType.getInstance().getSuffix(type))){
+                fileSuffix = MimeType.getInstance().getSuffix(type);
+            }
+        }
+
         return System.currentTimeMillis() + fileSuffix;
     }
 
