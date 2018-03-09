@@ -28,6 +28,11 @@ public class HucDownloader {
         DownLoaderService.startDownLoad(context, request);
     }
 
+    public static void download(Context context, Request request, DownloadStatusListener downloadStatusListener) {
+        DownLoaderService.setDownloadStatusListener(downloadStatusListener);
+        DownLoaderService.startDownLoad(context, request);
+    }
+
     public static void setDownloadStatusListener(DownloadStatusListener downloadStatusListener) {
         sDownloadStatusListener = downloadStatusListener;
     }

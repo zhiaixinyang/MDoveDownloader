@@ -40,8 +40,13 @@ import okhttp3.ResponseBody;
 
 public class DownloadRequest extends BaseRequest<DownloadRequest> {
     private String mFileLocation;
-    private String mFileName = FileConfig.DEFAULT_DOWNLOAD_FILE_NAME;
+    private String mFileName = null;
     private Context mContext;
+
+    //文件类型判断
+    private static String APK_CONTENTTYPE = "application/vnd.android.package-archive";
+    private static String PNG_CONTENTTYPE = "image/png";
+    private static String JPG_CONTENTTYPE = "image/jpg";
 
     public DownloadRequest(Context context, String url) {
         mContext = context;
@@ -83,6 +88,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                         return Flowable.create(new FlowableOnSubscribe<DownLoadProgress>() {
                             @Override
                             public void subscribe(FlowableEmitter<DownLoadProgress> subscriber) throws Exception {
+                                mFileName = getFileName(responseBody);
                                 File dir = FileUtils.getFileDir(mFileLocation, mFileName);
                                 if (!dir.exists()) {
                                     dir.mkdirs();
@@ -96,6 +102,24 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                 .sample(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .toObservable();
+    }
+
+    private String getFileName(ResponseBody responseBody) {
+        if (!TextUtils.isEmpty(mFileName)) {
+            return mFileName;
+        }
+        //文件名后缀而已
+        String fileSuffix = "";
+        String type = responseBody.contentType().toString();
+
+        if (type.equals(APK_CONTENTTYPE)) {
+            fileSuffix = ".apk";
+        } else if (type.equals(PNG_CONTENTTYPE)) {
+            fileSuffix = ".png";
+        } else if (type.equals(JPG_CONTENTTYPE)) {
+            fileSuffix = ".jpg";
+        }
+        return System.currentTimeMillis() + fileSuffix;
     }
 
     @Override

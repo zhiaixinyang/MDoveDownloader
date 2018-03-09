@@ -3,6 +3,8 @@ package com.suapp.dcdownloader.httpurlconnect.model;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.suapp.dcdownloader.config.FileConfig;
+
 import java.io.File;
 import java.io.Serializable;
 
@@ -13,11 +15,11 @@ import io.reactivex.annotations.NonNull;
  */
 
 public class Request implements Serializable {
-    private String mFileLocation;
+    private String mFileLocation = FileConfig.DEFAULT_DOWNLOAD_DIR;
     private String mFileUrl;
     private int mThreadCount;
     private String mFileName;
-    private final static String sDefaultDirName = "DcDownloader";
+    private final static String sDefaultDirName = FileConfig.DEFAULT_DOWNLOAD_FILE_NAME;
     private DownloadMode mDownloadMode;
 
     public enum DownloadMode {
