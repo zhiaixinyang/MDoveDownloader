@@ -1,10 +1,10 @@
 package com.suapp.dcdownloader.base;
 
 
+import com.suapp.dcdownloader.retrofit.DownloadRequest;
 import com.suapp.dcdownloader.retrofit.api.ApiService;
 import com.suapp.dcdownloader.retrofit.listener.DcCallback;
 
-import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

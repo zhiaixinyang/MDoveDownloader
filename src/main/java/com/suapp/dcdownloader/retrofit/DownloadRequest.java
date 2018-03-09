@@ -6,7 +6,6 @@ import android.text.TextUtils;
 
 import com.suapp.dcdownloader.base.BaseRequest;
 import com.suapp.dcdownloader.base.MimeType;
-import com.suapp.dcdownloader.config.FileConfig;
 import com.suapp.dcdownloader.config.UrlConfig;
 import com.suapp.dcdownloader.retrofit.network.SURetrofitFactory;
 import com.suapp.dcdownloader.retrofit.api.ApiService;
@@ -43,11 +42,13 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     private String mFileLocation;
     private String mFileName = null;
     private Context mContext;
+    private String mUrl;
 
-    public DownloadRequest(Context context, String url) {
+    public DownloadRequest(@NonNull Context context, @NonNull String url) {
         mContext = context;
         mFileLocation = FileUtils.getDiskCachePath(mContext);
         downloadUrl(url);
+        mUrl = url;
         initNet();
     }
 
@@ -106,13 +107,13 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
         }
         //文件名后缀而已
         String fileSuffix = "";
-        String type ="";
+        String type = "";
         if (responseBody.contentType() != null) {
             type = responseBody.contentType().toString();
         }
 
         if (!TextUtils.isEmpty(type)) {
-            if (!TextUtils.isEmpty(MimeType.getInstance().getSuffix(type))){
+            if (!TextUtils.isEmpty(MimeType.getInstance().getSuffix(type))) {
                 fileSuffix = MimeType.getInstance().getSuffix(type);
             }
         }
@@ -123,6 +124,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     @Override
     protected <T> void execute(@NonNull DcCallback<T> callback) {
         DisposableObserver disposableObserver = new DcDownloadSubscriber(callback);
+        DownloadManager.get().addRequest(mUrl, disposableObserver);
         execute().subscribe(disposableObserver);
     }
 
