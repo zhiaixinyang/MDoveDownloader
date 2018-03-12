@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import com.suapp.dcdownloader.retrofit.listener.DcCallbackSubscriber;
 import com.suapp.dcdownloader.utils.Singleton;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import io.reactivex.observers.DisposableObserver;
 
 public class DownloadManager {
     private static List<String> mRunningReq;
-    private static Map<String, DisposableObserver> mRunningReqMap;
+    private static Map<String, DcCallbackSubscriber> mRunningReqMap;
 
     private static final Singleton<DownloadManager> INSTANCE = new Singleton<DownloadManager>() {
         @Override
@@ -46,7 +47,7 @@ public class DownloadManager {
         return true;
     }
 
-    public void addRequest(@NonNull String url, @NonNull DisposableObserver disposableObserver) {
+    public void addRequest(@NonNull String url, @NonNull DcCallbackSubscriber disposableObserver) {
         mRunningReqMap.put(url, disposableObserver);
     }
 
@@ -56,8 +57,9 @@ public class DownloadManager {
             cancelAll();
         }
         if (mRunningReqMap.containsKey(url)) {
-            DisposableObserver disposableObserver = mRunningReqMap.get(url);
+            DcCallbackSubscriber disposableObserver = mRunningReqMap.get(url);
             if (!disposableObserver.isDisposed()) {
+                disposableObserver.cancel(url);
                 disposableObserver.dispose();
             }
             mRunningReqMap.remove(url);
@@ -69,9 +71,10 @@ public class DownloadManager {
     }
 
     public void cancelAll() {
-        for (Map.Entry<String, DisposableObserver> entry : mRunningReqMap.entrySet()) {
-            DisposableObserver disposableObserver = entry.getValue();
+        for (Map.Entry<String, DcCallbackSubscriber> entry : mRunningReqMap.entrySet()) {
+            DcCallbackSubscriber disposableObserver = entry.getValue();
             if (!disposableObserver.isDisposed()) {
+                disposableObserver.cancel(entry.getKey());
                 disposableObserver.dispose();
             }
         }

@@ -7,10 +7,10 @@ import android.text.TextUtils;
 import com.suapp.dcdownloader.base.BaseRequest;
 import com.suapp.dcdownloader.base.MimeType;
 import com.suapp.dcdownloader.config.UrlConfig;
+import com.suapp.dcdownloader.retrofit.listener.DcCallbackSubscriber;
 import com.suapp.dcdownloader.retrofit.network.SURetrofitFactory;
 import com.suapp.dcdownloader.retrofit.api.ApiService;
 import com.suapp.dcdownloader.retrofit.listener.DcCallback;
-import com.suapp.dcdownloader.retrofit.listener.DcDownloadSubscriber;
 import com.suapp.dcdownloader.retrofit.model.DownLoadProgress;
 import com.suapp.dcdownloader.utils.FileUtils;
 
@@ -30,7 +30,6 @@ import io.reactivex.FlowableOnSubscribe;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
-import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
@@ -124,7 +123,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
 
     @Override
     protected <T> void execute(@NonNull DcCallback<T> callback) {
-        DisposableObserver disposableObserver = new DcDownloadSubscriber(callback);
+        DcCallbackSubscriber disposableObserver = new DcCallbackSubscriber(callback);
         DownloadManager.get().addRequest(mDownloadUrl, disposableObserver);
         execute().subscribe(disposableObserver);
     }
@@ -156,8 +155,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                 long contentLength = resp.contentLength();
                 downProgress.setTotalSize(contentLength);
 
-                while ((readLen = inputStream.read(buffer)) != -1
-                        && DownloadManager.get().isRunning(mDownloadUrl)) {
+                while ((readLen = inputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, readLen);
                     downloadSize += readLen;
                     downProgress.setDownloadSize(downloadSize);
@@ -178,7 +176,9 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                 }
             }
         } catch (IOException e) {
-            sub.onError(e);
+            if (sub != null && !sub.isCancelled()) {
+                sub.onError(e);
+            }
         }
     }
 }
