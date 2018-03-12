@@ -20,6 +20,14 @@ public class DcCallbackSubscriber<T> extends DisposableObserver<T> {
 
     @Override
     public void onNext(T t) {
+        if (isDisposed()){
+            if (t instanceof DownLoadProgress ) {
+                mCallback.onCancel(((DownLoadProgress) t).getDownloadUrl());
+                return;
+            }
+            mCallback.onCancel(null);
+            return;
+        }
         if (t instanceof DownLoadProgress && ((DownLoadProgress) t).getDownloadSize() <= 0
                 && ((DownLoadProgress) t).getStream() != null) {
             mCallback.onPreDownload(t);

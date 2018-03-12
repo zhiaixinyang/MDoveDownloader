@@ -64,6 +64,10 @@ public class DownloadManager {
         }
     }
 
+    public boolean isRunning(String url) {
+        return mRunningReq.contains(url);
+    }
+
     public void cancelAll() {
         for (Map.Entry<String, DisposableObserver> entry : mRunningReqMap.entrySet()) {
             DisposableObserver disposableObserver = entry.getValue();

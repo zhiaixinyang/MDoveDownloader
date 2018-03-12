@@ -17,6 +17,7 @@ public class DownLoadProgress implements Parcelable {
     private long mDownloadSize;
     private File mDownloadFile;
     private InputStream mInputStream;
+    private String mDownloadUrl;
 
     public DownLoadProgress() {
     }
@@ -29,6 +30,14 @@ public class DownLoadProgress implements Parcelable {
     protected DownLoadProgress(Parcel in) {
         mTotalSize = in.readLong();
         mDownloadSize = in.readLong();
+    }
+
+    public String getDownloadUrl() {
+        return mDownloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        mDownloadUrl = downloadUrl;
     }
 
     public void setStream(InputStream inputStream) {

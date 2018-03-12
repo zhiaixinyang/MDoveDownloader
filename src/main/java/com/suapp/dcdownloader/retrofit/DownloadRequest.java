@@ -42,13 +42,13 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     private String mFileLocation;
     private String mFileName = null;
     private Context mContext;
-    private String mUrl;
+    private String mDownloadUrl;
 
     public DownloadRequest(@NonNull Context context, @NonNull String url) {
         mContext = context;
         mFileLocation = FileUtils.getDiskCachePath(mContext);
         downloadUrl(url);
-        mUrl = url;
+        mDownloadUrl = url;
         initNet();
     }
 
@@ -90,6 +90,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                                 if (!dir.exists()) {
                                     dir.mkdirs();
                                 }
+                                DownloadManager.get().addRequestUrl(mDownloadUrl);
                                 File file = new File(dir.getPath() + File.separator + mFileName);
                                 saveFile(subscriber, file, responseBody);
                             }
@@ -124,7 +125,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
     @Override
     protected <T> void execute(@NonNull DcCallback<T> callback) {
         DisposableObserver disposableObserver = new DcDownloadSubscriber(callback);
-        DownloadManager.get().addRequest(mUrl, disposableObserver);
+        DownloadManager.get().addRequest(mDownloadUrl, disposableObserver);
         execute().subscribe(disposableObserver);
     }
 
@@ -145,6 +146,7 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                 byte[] buffer = new byte[4096];
 
                 DownLoadProgress downProgress = new DownLoadProgress();
+                downProgress.setDownloadUrl(mDownloadUrl);
                 inputStream = resp.byteStream();
                 downProgress.setStream(inputStream);
                 sub.onNext(downProgress);
@@ -154,7 +156,8 @@ public class DownloadRequest extends BaseRequest<DownloadRequest> {
                 long contentLength = resp.contentLength();
                 downProgress.setTotalSize(contentLength);
 
-                while ((readLen = inputStream.read(buffer)) != -1) {
+                while ((readLen = inputStream.read(buffer)) != -1
+                        && DownloadManager.get().isRunning(mDownloadUrl)) {
                     outputStream.write(buffer, 0, readLen);
                     downloadSize += readLen;
                     downProgress.setDownloadSize(downloadSize);

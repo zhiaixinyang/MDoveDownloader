@@ -19,11 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class SURetrofitFactory extends RetrofitFactory {
 
-    public static <T> T create(@NonNull Context context, @NonNull String baseApiUrl, @NonNull Class<T> service) {
-        return create(context, baseApiUrl, service);
-    }
-
-    public static <T> T create(Context context, String baseApiUrl, @CallAdapterType int callAdapterType, Class<T> service) {
+    public static <T> T create(Context context, String baseApiUrl, Class<T> service) {
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
 
         clientBuilder.connectTimeout(10000, TimeUnit.MILLISECONDS);
@@ -33,15 +29,7 @@ public class SURetrofitFactory extends RetrofitFactory {
         clientBuilder.addInterceptor(getPublicParamsInterceptor(context));
 
         CallAdapter.Factory callAdapterFactory;
-        switch (callAdapterType) {
-            case CallAdapterType.CALL_ADAPTER_RXJAVA2:
-                callAdapterFactory = RxJava2CallAdapterFactory.create();
-                break;
-            case CallAdapterType.CALL_ADAPTER_RXJAVA:
-            default:
-                callAdapterFactory = RxJava2CallAdapterFactory.create();
-                break;
-        }
+        callAdapterFactory = RxJava2CallAdapterFactory.create();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseApiUrl)
@@ -51,13 +39,5 @@ public class SURetrofitFactory extends RetrofitFactory {
                 .build();
 
         return retrofit.create(service);
-    }
-
-    @IntDef(value = {CallAdapterType.CALL_ADAPTER_RXJAVA, CallAdapterType.CALL_ADAPTER_RXJAVA2})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface CallAdapterType {
-        // Retrofit 默认添加 Call 返回 类型的 CallAdapterFactory，所以这里不定义
-        int CALL_ADAPTER_RXJAVA = 1;
-        int CALL_ADAPTER_RXJAVA2 = 2;
     }
 }
