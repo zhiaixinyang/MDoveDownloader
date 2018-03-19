@@ -6,7 +6,7 @@ import android.os.Build;
 import android.util.Log;
 
 import com.suapp.dcdownloader.utils.FileUtils;
-import com.suapp.dcdownloader.utils.IOUtils;
+import com.suapp.dcdownloader.utils.IoUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -135,7 +135,7 @@ public class NativeLibraryLoader {
 
             is = file.getInputStream(entry);
             os = new FileOutputStream(outputFile);
-            IOUtils.copyLarge(is, os);
+            IoUtils.copyLarge(is, os);
             // Change permission to rwx-rx-rx
             FileUtils.setPermissions(outputFile.getAbsolutePath(), 0x755);
             return true;
@@ -148,8 +148,8 @@ public class NativeLibraryLoader {
             e.printStackTrace();
             return false;
         } finally {
-            IOUtils.close(is);
-            IOUtils.close(os);
+            IoUtils.close(is);
+            IoUtils.close(os);
         }
     }
 

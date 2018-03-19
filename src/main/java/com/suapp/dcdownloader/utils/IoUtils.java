@@ -23,7 +23,7 @@ import java.nio.charset.Charset;
  *
  * @author xubin@jiandaola.com
  */
-public class IOUtils {
+public class IoUtils {
 
     public static final String DEFAULT_ENCODING = "utf-8";
 
@@ -35,7 +35,7 @@ public class IOUtils {
     private static final int SKIP_BUFFER_SIZE = 2048;
     private static byte[] SKIP_BYTE_BUFFER;
 
-    private IOUtils() {
+    private IoUtils() {
     }
 
     /**
@@ -519,6 +519,17 @@ public class IOUtils {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    public static void closeQuietly(AutoCloseable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (RuntimeException rethrown) {
+                throw rethrown;
+            } catch (Exception ignored) {
             }
         }
     }
