@@ -19,7 +19,6 @@ package com.suapp.dcdownloader.system;
 import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 
 import android.app.AlarmManager;
-import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.job.JobInfo;
@@ -32,16 +31,21 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
+import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.suapp.dcdownloader.system.utils.GuardedBy;
+import com.suapp.dcdownloader.system.utils.IndentingPrintWriter;
+import com.suapp.dcdownloader.system.utils.Maps;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -71,20 +75,26 @@ import java.util.concurrent.TimeUnit;
 public class DownloadService extends Service {
     // TODO: migrate WakeLock from individual DownloadThreads out into
     // DownloadReceiver to protect our entire workflow.
-
+    private static final String TAG = "DownloadService";
     private static final boolean DEBUG_LIFECYCLE = false;
 
     SystemFacade mSystemFacade;
 
     private AlarmManager mAlarmManager;
 
-    /** Observer to get notified when the content observer's data changes */
+    /**
+     * Observer to get notified when the content observer's data changes
+     */
     private DownloadManagerContentObserver mObserver;
 
-    /** Class to handle Notification Manager updates */
+    /**
+     * Class to handle Notification Manager updates
+     */
     private DownloadNotifier mNotifier;
 
-    /** Scheduling of the periodic cleanup job */
+    /**
+     * Scheduling of the periodic cleanup job
+     */
     private JobInfo mCleanupJob;
 
     private static final int CLEANUP_JOB_ID = 1;
@@ -173,6 +183,7 @@ public class DownloadService extends Service {
     /**
      * Initializes the service when it is first created
      */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onCreate() {
         super.onCreate();
@@ -210,6 +221,7 @@ public class DownloadService extends Service {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private boolean needToScheduleCleanup(JobScheduler js) {
         List<JobInfo> myJobs = js.getAllPendingJobs();
         final int N = myJobs.size();
@@ -269,6 +281,7 @@ public class DownloadService extends Service {
     private static final int MSG_FINAL_UPDATE = 2;
 
     private Handler.Callback mUpdateCallback = new Handler.Callback() {
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public boolean handleMessage(Message msg) {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -339,8 +352,9 @@ public class DownloadService extends Service {
      * requested through {@link #enqueueUpdate()}.
      *
      * @return If there are active tasks being processed, as of the database
-     *         snapshot taken in this update.
+     * snapshot taken in this update.
      */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private boolean updateLocked() {
         final long now = mSystemFacade.currentTimeMillis();
 

@@ -985,7 +985,6 @@ public class DownloadManager {
         }
     }
 
-    /** {@hide} */
     public void setAccessFilename(boolean accessFilename) {
         mAccessFilename = accessFilename;
     }

@@ -557,10 +557,11 @@ public final class DownloadProvider extends ContentProvider {
                         "need WRITE_EXTERNAL_STORAGE permission to use DESTINATION_FILE_URI");
                 checkFileUriDestination(values);
             } else if (dest == Downloads.Impl.DESTINATION_SYSTEMCACHE_PARTITION) {
-                getContext().enforcePermission(
-                        android.Manifest.permission.ACCESS_CACHE_FILESYSTEM,
-                        Binder.getCallingPid(), Binder.getCallingUid(),
-                        "need ACCESS_CACHE_FILESYSTEM permission to use system cache");
+                //TODO android.Manifest.permission.ACCESS_CACHE_FILESYSTEM
+//                getContext().enforcePermission(
+//                        android.Manifest.permission.ACCESS_CACHE_FILESYSTEM,
+//                        Binder.getCallingPid(), Binder.getCallingUid(),
+//                        "need ACCESS_CACHE_FILESYSTEM permission to use system cache");
             }
             filteredValues.put(Downloads.Impl.COLUMN_DESTINATION, dest);
         }
@@ -756,15 +757,15 @@ public final class DownloadProvider extends ContentProvider {
         if (getContext().checkCallingOrSelfPermission(Downloads.Impl.PERMISSION_NO_NOTIFICATION)
                 == PackageManager.PERMISSION_GRANTED) {
             enforceAllowedValues(values, Downloads.Impl.COLUMN_VISIBILITY,
-                    Request.VISIBILITY_HIDDEN,
-                    Request.VISIBILITY_VISIBLE,
-                    Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
-                    Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION);
+                    DownloadManager.Request.VISIBILITY_HIDDEN,
+                    DownloadManager.Request.VISIBILITY_VISIBLE,
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION);
         } else {
             enforceAllowedValues(values, Downloads.Impl.COLUMN_VISIBILITY,
-                    Request.VISIBILITY_VISIBLE,
-                    Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
-                    Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION);
+                    DownloadManager.Request.VISIBILITY_VISIBLE,
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION);
         }
 
         // remove the rest of the columns that are allowed (with any value)

@@ -200,28 +200,29 @@ public class DownloadStorageProvider extends DocumentsProvider {
         return result;
     }
 
-    @Override
-    public Cursor queryChildDocumentsForManage(
-            String parentDocumentId, String[] projection, String sortOrder)
-            throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(resolveDocumentProjection(projection));
-
-        // Delegate to real provider
-        final long token = Binder.clearCallingIdentity();
-        Cursor cursor = null;
-        try {
-            cursor = mDm.query(
-                    new DownloadManager.Query().setOnlyIncludeVisibleInDownloadsUi(true));
-            copyNotificationUri(result, cursor);
-            while (cursor.moveToNext()) {
-                includeDownloadFromCursor(result, cursor);
-            }
-        } finally {
-            IoUtils.closeQuietly(cursor);
-            Binder.restoreCallingIdentity(token);
-        }
-        return result;
-    }
+    //TODO queryChildDocumentsForManage()
+//    @Override
+//    public Cursor queryChildDocumentsForManage(
+//            String parentDocumentId, String[] projection, String sortOrder)
+//            throws FileNotFoundException {
+//        final MatrixCursor result = new MatrixCursor(resolveDocumentProjection(projection));
+//
+//        // Delegate to real provider
+//        final long token = Binder.clearCallingIdentity();
+//        Cursor cursor = null;
+//        try {
+//            cursor = mDm.query(
+//                    new DownloadManager.Query().setOnlyIncludeVisibleInDownloadsUi(true));
+//            copyNotificationUri(result, cursor);
+//            while (cursor.moveToNext()) {
+//                includeDownloadFromCursor(result, cursor);
+//            }
+//        } finally {
+//            IoUtils.closeQuietly(cursor);
+//            Binder.restoreCallingIdentity(token);
+//        }
+//        return result;
+//    }
 
     @Override
     public Cursor queryRecentDocuments(String rootId, String[] projection)

@@ -25,7 +25,9 @@ import android.app.job.JobService;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Environment;
+import android.support.annotation.RequiresApi;
 import android.system.ErrnoException;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -46,6 +48,7 @@ import java.util.HashSet;
  * metadata and files on disk, which can become inconsistent when files are
  * deleted directly on disk.
  */
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class DownloadIdleService extends JobService {
 
     private class IdleRunnable implements Runnable {

@@ -19,6 +19,7 @@ package com.suapp.dcdownloader.system;
 import static android.app.DownloadManager.Request.VISIBILITY_VISIBLE;
 import static android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED;
 import static android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION;
+import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_RUNNING;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -32,12 +33,14 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.util.Log;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.suapp.dcdownloader.R;
+import com.suapp.dcdownloader.system.utils.DateUtils;
+import com.suapp.dcdownloader.system.utils.GuardedBy;
 import com.suapp.dcdownloader.system.utils.LongSparseLongArray;
 
 import java.text.NumberFormat;
@@ -45,14 +48,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.annotation.concurrent.GuardedBy;
-
 /**
  * Update {@link NotificationManager} to reflect current {@link DownloadInfo}
  * states. Collapses similar downloads into a single notification, and builds
  * {@link PendingIntent} that launch towards { DownloadReceiver}.
  */
 public class DownloadNotifier {
+    public static final String TAG = "DownloadNotifier";
 
     private static final int TYPE_ACTIVE = 1;
     private static final int TYPE_WAITING = 2;
@@ -114,6 +116,7 @@ public class DownloadNotifier {
      * Update {@link NotificationManager} to reflect the given set of
      * {@link DownloadInfo}, adding, collapsing, and removing as needed.
      */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void updateWith(Collection<DownloadInfo> downloads) {
         synchronized (mActiveNotifs) {
             updateWithLocked(downloads);
@@ -225,7 +228,7 @@ public class DownloadNotifier {
                     if (speed > 0) {
                         final long remainingMillis = ((total - current) * 1000) / speed;
                         remainingText = res.getString(R.string.download_remaining,
-                                DateUtils.formatDuration(remainingMillis));
+                                DateUtils.formatDefault(remainingMillis));
                     }
 
                     final int percent = (int) ((current * 100) / total);
@@ -273,15 +276,15 @@ public class DownloadNotifier {
                 }
 
                 if (type == TYPE_ACTIVE) {
-                    builder.setContentTitle(res.getQuantityString(
-                            R.plurals.notif_summary_active, cluster.size(), cluster.size()));
+//                    builder.setContentTitle(res.getQuantityString(
+//                            R.plurals.notif_summary_active, cluster.size(), cluster.size()));
                     builder.setContentText(remainingText);
                     builder.setContentInfo(percentText);
                     inboxStyle.setSummaryText(remainingText);
 
                 } else if (type == TYPE_WAITING) {
-                    builder.setContentTitle(res.getQuantityString(
-                            R.plurals.notif_summary_waiting, cluster.size(), cluster.size()));
+//                    builder.setContentTitle(res.getQuantityString(
+//                            R.plurals.notif_summary_waiting, cluster.size(), cluster.size()));
                     builder.setContentText(
                             res.getString(R.string.notification_need_wifi_for_size));
                     inboxStyle.setSummaryText(

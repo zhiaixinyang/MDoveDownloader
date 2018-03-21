@@ -341,7 +341,7 @@ public class Helpers {
      * Checks whether the filename looks legitimate for security purposes. This
      * prevents us from opening files that aren't actually downloads.
      */
-    static boolean isFilenameValid(Context context, File file) {
+    public static boolean isFilenameValid(Context context, File file) {
         final File[] whitelist;
         try {
             file = file.getCanonicalFile();

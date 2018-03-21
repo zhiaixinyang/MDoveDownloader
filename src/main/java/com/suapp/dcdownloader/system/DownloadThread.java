@@ -16,19 +16,7 @@
 
 package com.suapp.dcdownloader.system;
 
-import static android.provider.Downloads.Impl.STATUS_BAD_REQUEST;
-import static android.provider.Downloads.Impl.STATUS_CANCELED;
-import static android.provider.Downloads.Impl.STATUS_CANNOT_RESUME;
-import static android.provider.Downloads.Impl.STATUS_FILE_ERROR;
-import static android.provider.Downloads.Impl.STATUS_HTTP_DATA_ERROR;
-import static android.provider.Downloads.Impl.STATUS_SUCCESS;
-import static android.provider.Downloads.Impl.STATUS_TOO_MANY_REDIRECTS;
-import static android.provider.Downloads.Impl.STATUS_UNHANDLED_HTTP_CODE;
-import static android.provider.Downloads.Impl.STATUS_UNKNOWN_ERROR;
-import static android.provider.Downloads.Impl.STATUS_WAITING_FOR_NETWORK;
-import static android.provider.Downloads.Impl.STATUS_WAITING_TO_RETRY;
 import static android.text.format.DateUtils.SECOND_IN_MILLIS;
-import static com.android.providers.downloads.Constants.TAG;
 import static com.suapp.dcdownloader.system.Constants.TAG;
 import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_BAD_REQUEST;
 import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_CANCELED;
@@ -50,11 +38,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.drm.DrmManagerClient;
-import android.drm.DrmOutputStream;
 import android.net.ConnectivityManager;
-import android.net.INetworkPolicyListener;
 import android.net.NetworkInfo;
-import android.net.NetworkPolicyManager;
 import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
@@ -68,7 +53,6 @@ import android.system.OsConstants;
 import android.util.Log;
 import android.util.Pair;
 
-import com.android.providers.downloads.DownloadInfo.NetworkState;
 import com.suapp.dcdownloader.system.utils.DownloadDrmHelper;
 import com.suapp.dcdownloader.system.utils.Helpers;
 import com.suapp.dcdownloader.system.utils.StorageUtils;

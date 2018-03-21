@@ -6,4 +6,9 @@
     <string name="download_running">Download Running</string>
     <string name="download_error">Download Error</string>
     <string name="download_no_application_title">Download No Application Title</string>
+    <string name="download_remaining">Download Remaining:%1$s</string>
+    <string name="notification_need_wifi_for_size">Notification Need Wifi For Size</string>
+    <string name="notification_download_failed">Notification Download Failed</string>
+    <string name="notification_download_complete">Notification Download Complete</string>
+    <string name="download_unknown_title">Download Unknown Title</string>
 </resources>
