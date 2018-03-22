@@ -74,7 +74,7 @@ public class Helpers {
      * Creates a filename (where the file should be saved) from info about a download.
      * This file will be touched to reserve it.
      */
-    static String generateSaveFile(Context context, String url, String hint,
+    public static String generateSaveFile(Context context, String url, String hint,
             String contentDisposition, String contentLocation, String mimeType, int destination)
             throws IOException {
 

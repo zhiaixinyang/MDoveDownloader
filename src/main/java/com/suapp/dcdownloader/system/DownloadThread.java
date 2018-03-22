@@ -23,8 +23,12 @@ import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_CANCELED;
 import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_CANNOT_RESUME;
 import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_FILE_ERROR;
 import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_HTTP_DATA_ERROR;
+import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_SUCCESS;
 import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_TOO_MANY_REDIRECTS;
 import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_UNHANDLED_HTTP_CODE;
+import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_UNKNOWN_ERROR;
+import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_WAITING_FOR_NETWORK;
+import static com.suapp.dcdownloader.system.Downloads.Impl.STATUS_WAITING_TO_RETRY;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
@@ -42,18 +46,22 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.net.Uri;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.WorkSource;
+import android.support.annotation.RequiresApi;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
 import android.util.Log;
 import android.util.Pair;
 
+import com.suapp.dcdownloader.INetworkPolicyListener;
 import com.suapp.dcdownloader.system.utils.DownloadDrmHelper;
+import com.suapp.dcdownloader.system.utils.DrmOutputStream;
 import com.suapp.dcdownloader.system.utils.Helpers;
 import com.suapp.dcdownloader.system.utils.StorageUtils;
 import com.suapp.dcdownloader.utils.IoUtils;
@@ -65,6 +73,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -190,17 +199,23 @@ public class DownloadThread implements Runnable {
     private long mLastUpdateBytes = 0;
     private long mLastUpdateTime = 0;
 
-    private int mNetworkType = ConnectivityManager.TYPE_NONE;
+    private int mNetworkType = ConnectivityManager.TYPE_WIFI;
 
-    /** Historical bytes/second speed of this download. */
+    /**
+     * Historical bytes/second speed of this download.
+     */
     private long mSpeed;
-    /** Time when current sample started. */
+    /**
+     * Time when current sample started.
+     */
     private long mSpeedSampleStart;
-    /** Bytes transferred since current sample started. */
+    /**
+     * Bytes transferred since current sample started.
+     */
     private long mSpeedSampleBytes;
 
     public DownloadThread(Context context, SystemFacade systemFacade, DownloadNotifier notifier,
-            DownloadInfo info) {
+                          DownloadInfo info) {
         mContext = context;
         mSystemFacade = systemFacade;
         mNotifier = notifier;
@@ -210,6 +225,7 @@ public class DownloadThread implements Runnable {
         mInfoDelta = new DownloadInfoDelta(info);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void run() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -217,22 +233,25 @@ public class DownloadThread implements Runnable {
         // Skip when download already marked as finished; this download was
         // probably started again while racing with UpdateThread.
         if (DownloadInfo.queryDownloadStatus(mContext.getContentResolver(), mId)
-                == Downloads.Impl.STATUS_SUCCESS) {
+                == STATUS_SUCCESS) {
             logDebug("Already finished; skipping");
             return;
         }
 
-        final NetworkPolicyManager netPolicy = NetworkPolicyManager.from(mContext);
+//        final NetworkPolicyManager netPolicy = NetworkPolicyManager.from(mContext);
         PowerManager.WakeLock wakeLock = null;
         final PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
 
         try {
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-            wakeLock.setWorkSource(new WorkSource(mInfo.mUid));
+            Class clazz = Class.forName("android.os.WorkSource");
+            Constructor constructor = clazz.getDeclaredConstructor(int.class);
+            WorkSource workSource= (WorkSource) constructor.newInstance(mInfo.mUid);
+            wakeLock.setWorkSource(workSource);
             wakeLock.acquire();
 
             // while performing download, register for rules updates
-            netPolicy.registerListener(mPolicyListener);
+//            netPolicy.registerListener(mPolicyListener);
 
             logDebug("Starting");
 
@@ -245,8 +264,8 @@ public class DownloadThread implements Runnable {
 
             // Network traffic on this thread should be counted against the
             // requesting UID, and is tagged with well-known value.
-            TrafficStats.setThreadStatsTag(TrafficStats.TAG_SYSTEM_DOWNLOAD);
-            TrafficStats.setThreadStatsUid(mInfo.mUid);
+//            TrafficStats.setThreadStatsTag(TrafficStats.TAG_SYSTEM_DOWNLOAD);
+//            TrafficStats.setThreadStatsUid(mInfo.mUid);
 
             executeDownload();
 
@@ -319,9 +338,9 @@ public class DownloadThread implements Runnable {
             }
 
             TrafficStats.clearThreadStatsTag();
-            TrafficStats.clearThreadStatsUid();
+//            TrafficStats.clearThreadStatsUid();
 
-            netPolicy.unregisterListener(mPolicyListener);
+//            netPolicy.unregisterListener(mPolicyListener);
 
             if (wakeLock != null) {
                 wakeLock.release();
@@ -334,6 +353,7 @@ public class DownloadThread implements Runnable {
      * Fully execute a single download request. Setup and send the request,
      * handle the response, and transfer the data to the destination file.
      */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void executeDownload() throws StopRequestException {
         final boolean resuming = mInfoDelta.mCurrentBytes != 0;
 
@@ -353,7 +373,7 @@ public class DownloadThread implements Runnable {
             if ((!cleartextTrafficPermitted) && ("http".equalsIgnoreCase(url.getProtocol()))) {
                 throw new StopRequestException(STATUS_BAD_REQUEST,
                         "Cleartext traffic not permitted for UID " + mInfo.mUid + ": "
-                        + Uri.parse(url.toString()).toSafeString());
+                                + Uri.parse(url.toString()));
             }
 
             // Open connection and follow any redirects until we have a useful
@@ -441,6 +461,7 @@ public class DownloadThread implements Runnable {
     /**
      * Transfer data from the given connection to the destination file.
      */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void transferData(HttpURLConnection conn) throws StopRequestException {
 
         // To detect when we're really finished, we either need a length, closed
@@ -543,6 +564,7 @@ public class DownloadThread implements Runnable {
      * Transfer as much data as possible from the HTTP response to the
      * destination file.
      */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void transferData(InputStream in, OutputStream out, FileDescriptor outFd)
             throws StopRequestException {
         final byte buffer[] = new byte[Constants.BUFFER_SIZE];
@@ -594,6 +616,7 @@ public class DownloadThread implements Runnable {
      * Called just before the thread finishes, regardless of status, to take any
      * necessary action on the downloaded file.
      */
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void finalizeDestination() {
         if (Downloads.Impl.isStatusError(mInfoDelta.mStatus)) {
             // When error, free up any disk space
@@ -653,13 +676,13 @@ public class DownloadThread implements Runnable {
         // checking connectivity will apply current policy
         mPolicyDirty = false;
 
-        final NetworkState networkUsable = mInfo.checkCanUseNetwork(mInfoDelta.mTotalBytes);
-        if (networkUsable != NetworkState.OK) {
-            int status = Downloads.Impl.STATUS_WAITING_FOR_NETWORK;
-            if (networkUsable == NetworkState.UNUSABLE_DUE_TO_SIZE) {
+        final DownloadInfo.NetworkState networkUsable = mInfo.checkCanUseNetwork(mInfoDelta.mTotalBytes);
+        if (networkUsable != DownloadInfo.NetworkState.OK) {
+            int status = STATUS_WAITING_FOR_NETWORK;
+            if (networkUsable == DownloadInfo.NetworkState.UNUSABLE_DUE_TO_SIZE) {
                 status = Downloads.Impl.STATUS_QUEUED_FOR_WIFI;
                 mInfo.notifyPauseDueToSize(true);
-            } else if (networkUsable == NetworkState.RECOMMENDED_UNUSABLE_DUE_TO_SIZE) {
+            } else if (networkUsable == DownloadInfo.NetworkState.RECOMMENDED_UNUSABLE_DUE_TO_SIZE) {
                 status = Downloads.Impl.STATUS_QUEUED_FOR_WIFI;
                 mInfo.notifyPauseDueToSize(false);
             }
@@ -856,7 +879,7 @@ public class DownloadThread implements Runnable {
 
     /**
      * Return if given status is eligible to be treated as
-     * {@link android.provider.Downloads.Impl#STATUS_WAITING_TO_RETRY}.
+     * {@link com.suapp.dcdownloader.system.Downloads.Impl#STATUS_WAITING_TO_RETRY}.
      */
     public static boolean isStatusRetryable(int status) {
         switch (status) {
