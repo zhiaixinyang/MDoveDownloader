@@ -74,6 +74,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -238,7 +240,25 @@ public class DownloadThread implements Runnable {
             return;
         }
 
-//        final NetworkPolicyManager netPolicy = NetworkPolicyManager.from(mContext);
+        //TODO NetworkPolicyManager被隐藏----->
+        Object netPolicy = null;//NetworkPolicyManager
+        Class netPolicyClass = null;
+        try {
+            netPolicyClass = Class.forName("android.net.NetworkPolicyManager");
+            if (netPolicy == null) {
+                throw new NullPointerException("NetworkPolicyManager reflect error , is NULL");
+            }
+            Method method = netPolicyClass.getMethod("from", Context.class);
+            method.setAccessible(true);
+            netPolicy = method.invoke(netPolicy, mContext);
+            if (netPolicy == null) {
+                throw new NullPointerException("NetworkPolicyManager reflect error , is NULL");
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        //------->
+
         PowerManager.WakeLock wakeLock = null;
         final PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
 
@@ -246,12 +266,14 @@ public class DownloadThread implements Runnable {
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
             Class clazz = Class.forName("android.os.WorkSource");
             Constructor constructor = clazz.getDeclaredConstructor(int.class);
-            WorkSource workSource= (WorkSource) constructor.newInstance(mInfo.mUid);
+            WorkSource workSource = (WorkSource) constructor.newInstance(mInfo.mUid);
             wakeLock.setWorkSource(workSource);
             wakeLock.acquire();
 
-            // while performing download, register for rules updates
-//            netPolicy.registerListener(mPolicyListener);
+            //TODO 依然通过反射(注册registerListener监听)---->
+            Method method = netPolicyClass.getMethod("registerListener", INetworkPolicyListener.class);
+            method.invoke(netPolicy, mPolicyListener);
+            //------->
 
             logDebug("Starting");
 
@@ -264,6 +286,7 @@ public class DownloadThread implements Runnable {
 
             // Network traffic on this thread should be counted against the
             // requesting UID, and is tagged with well-known value.
+            //TODO TrafficStats
 //            TrafficStats.setThreadStatsTag(TrafficStats.TAG_SYSTEM_DOWNLOAD);
 //            TrafficStats.setThreadStatsUid(mInfo.mUid);
 
