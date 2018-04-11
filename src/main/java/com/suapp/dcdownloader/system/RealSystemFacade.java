@@ -31,6 +31,9 @@ import android.util.Log;
 
 import com.suapp.dcdownloader.system.utils.ArrayUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 class RealSystemFacade implements SystemFacade {
     private Context mContext;
 
@@ -51,8 +54,14 @@ class RealSystemFacade implements SystemFacade {
             Log.w(Constants.TAG, "couldn't get connectivity manager");
             return null;
         }
-
-        final NetworkInfo activeInfo = connectivity.getActiveNetworkInfoForUid(uid);
+        NetworkInfo activeInfo = null;
+        try {
+            //TODO 系统获取NetworkInfo被隐藏
+            Method method = connectivity.getClass().getMethod("getActiveNetworkInfoForUid", int.class);
+            activeInfo = (NetworkInfo) method.invoke(connectivity, uid);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
         if (activeInfo == null && Constants.LOGVV) {
             Log.v(Constants.TAG, "network is not available");
         }
@@ -62,7 +71,7 @@ class RealSystemFacade implements SystemFacade {
     @Override
     public boolean isActiveNetworkMetered() {
         final ConnectivityManager conn = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (conn==null){
+        if (conn == null) {
             return false;
         }
         return conn.isActiveNetworkMetered();
@@ -71,7 +80,7 @@ class RealSystemFacade implements SystemFacade {
     @Override
     public boolean isNetworkRoaming() {
         ConnectivityManager connectivity =
-            (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity == null) {
             Log.w(Constants.TAG, "couldn't get connectivity manager");
             return false;
@@ -79,7 +88,23 @@ class RealSystemFacade implements SystemFacade {
 
         NetworkInfo info = connectivity.getActiveNetworkInfo();
         boolean isMobile = (info != null && info.getType() == ConnectivityManager.TYPE_MOBILE);
-        boolean isRoaming = isMobile && TelephonyManager.getDefault().isNetworkRoaming();
+
+
+        //TODO TelephonyManager.getDefault()被隐藏---
+        TelephonyManager telephonyManager = null;
+        try {
+            Class<TelephonyManager> telephonyManagerClass = (Class<TelephonyManager>) Class.forName("android.telephony.TelephonyManager");
+            Method method = telephonyManagerClass.getMethod("getDefault", new Class[]{});
+            telephonyManager = (TelephonyManager) method.invoke(null, null);
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        if (telephonyManager==null){
+            throw new NullPointerException("TelephonyManager invoke error , is NULL");
+        }
+        boolean isRoaming = isMobile && telephonyManager.isNetworkRoaming();
+        //------
+
         if (Constants.LOGVV && isRoaming) {
             Log.v(Constants.TAG, "network is roaming");
         }
