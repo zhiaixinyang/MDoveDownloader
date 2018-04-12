@@ -486,9 +486,6 @@ public class DownloadThread implements Runnable {
      */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void transferData(HttpURLConnection conn) throws StopRequestException {
-
-        // To detect when we're really finished, we either need a length, closed
-        // connection, or chunked encoding.
         final boolean hasLength = mInfoDelta.mTotalBytes != -1;
         final boolean isConnectionClose = "close".equalsIgnoreCase(
                 conn.getHeaderField("Connection"));
@@ -514,6 +511,7 @@ public class DownloadThread implements Runnable {
             }
 
             try {
+                //TODO
                 outPfd = mContext.getContentResolver()
                         .openFileDescriptor(mInfo.getAllDownloadsUri(), "rw");
                 outFd = outPfd.getFileDescriptor();
@@ -530,6 +528,7 @@ public class DownloadThread implements Runnable {
                     final long curSize = Os.fstat(outFd).st_size;
                     final long newBytes = mInfoDelta.mTotalBytes - curSize;
 
+                    //TODO 判断是否有足够空间。（不容易调用系统的实现）
                     StorageUtils.ensureAvailableSpace(mContext, outFd, newBytes);
 
                     try {

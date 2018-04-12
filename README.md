@@ -25,3 +25,6 @@ RetrofitDownLoader.downloadUrl(this, "http://47.94.132.220/build/TopCleaner/TopC
                 });
 
 ```
+
+流程：通过ContentProvider插入下载数据到数据库，插入前启动DownloadService，注册监听ContentProvider的Observer，响应插入操作。
+通过一个HandleThread，去封装/获取DownloadInfo，内部去启动DownloadThread（HttpURLConnection，transferData()方法中处理文件），交给线程池执行。

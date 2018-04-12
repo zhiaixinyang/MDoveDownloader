@@ -37,6 +37,7 @@ import com.suapp.dcdownloader.system.StopRequestException;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,7 +105,8 @@ public class StorageUtils {
             // up space from cache directories.
             final PackageManager pm = context.getPackageManager();
             final ObserverLatch observer = new ObserverLatch();
-            pm.freeStorageAndNotify(sForceFullEviction ? Long.MAX_VALUE : bytes, observer);
+            //TODO 判断空间是否空闲
+//            pm.freeStorageAndNotify(sForceFullEviction ? Long.MAX_VALUE : bytes, observer);
 
             try {
                 if (!observer.latch.await(30, TimeUnit.SECONDS)) {
@@ -119,7 +121,6 @@ public class StorageUtils {
             freeCacheStorage(bytes);
         }
 
-        // Did we free enough space?
         availBytes = getAvailableBytes(fd);
         if (availBytes < bytes) {
             throw new StopRequestException(STATUS_INSUFFICIENT_SPACE_ERROR,
