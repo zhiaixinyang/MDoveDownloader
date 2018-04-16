@@ -7,9 +7,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:allowBackup="true"
         android:name=".App"
+        android:allowBackup="true"
         android:supportsRtl="true">
+
+        <service android:name=".system.DownloadService" />
+        <provider
+            android:name=".system.DownloadProvider"
+            android:authorities="com.suapp.dcdownloader" />
 
     </application>
 

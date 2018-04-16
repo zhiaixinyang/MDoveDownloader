@@ -82,11 +82,7 @@ public final class DownloadProvider extends ContentProvider {
     private static final int ALL_DOWNLOADS = 3;
     private static final int ALL_DOWNLOADS_ID = 4;
     private static final int REQUEST_HEADERS_URI = 5;
-    /**
-     * URI matcher constant for the public URI returned by
-     * {@link DownloadManager#getUriForDownloadedFile(long)} if the given downloaded file
-     * is publicly accessible.
-     */
+
     private static final String AUTHORITY = "com.suapp.dcdownloader";
     private static final int PUBLIC_DOWNLOAD_ID = 6;
 
@@ -112,9 +108,6 @@ public final class DownloadProvider extends ContentProvider {
                 PUBLIC_DOWNLOAD_ID);
     }
 
-    /**
-     * Different base URIs that could be used to access an individual download
-     */
     private static final Uri[] BASE_URIS = new Uri[]{
             Downloads.Impl.CONTENT_URI,
             Downloads.Impl.ALL_DOWNLOADS_CONTENT_URI,
@@ -166,25 +159,13 @@ public final class DownloadProvider extends ContentProvider {
 
     private Handler mHandler;
 
-    /**
-     * The database that lies underneath this content provider
-     */
     private SQLiteOpenHelper mOpenHelper = null;
 
-    /**
-     * List of uids that can access the downloads
-     */
     private int mSystemUid = -1;
     private int mDefContainerUid = -1;
 
     SystemFacade mSystemFacade;
 
-    /**
-     * This class encapsulates a SQL where clause and its parameters.  It makes it possible for
-     * shared methods (like {@link DownloadProvider#getWhereClause(Uri, String, String[], int)})
-     * to return both pieces of information, and provides some utility logic to ease piece-by-piece
-     * construction of selections.
-     */
     private static class SqlSelection {
         public StringBuilder mWhereClause = new StringBuilder();
         public List<String> mParameters = new ArrayList<String>();
@@ -231,81 +212,33 @@ public final class DownloadProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(final SQLiteDatabase db, int oldV, final int newV) {
-            if (oldV == 31) {
-                // 31 and 100 are identical, just in different codelines. Upgrading from 31 is the
-                // same as upgrading from 100.
-                oldV = 100;
-            } else if (oldV < 100) {
-                // no logic to upgrade from these older version, just recreate the DB
-                Log.i(Constants.TAG, "Upgrading downloads database from version " + oldV
-                        + " to version " + newV + ", which will destroy all old data");
-                oldV = 99;
-            } else if (oldV > newV) {
-                // user must have downgraded software; we have no way to know how to downgrade the
-                // DB, so just recreate it
-                Log.i(Constants.TAG, "Downgrading downloads database from version " + oldV
-                        + " (current version is " + newV + "), destroying all old data");
-                oldV = 99;
-            }
-
-            for (int version = oldV + 1; version <= newV; version++) {
-                upgradeTo(db, version);
-            }
+            upgradeTo(db, newV);
         }
 
-        /**
-         * Upgrade database from (version - 1) to version.
-         */
         private void upgradeTo(SQLiteDatabase db, int version) {
             switch (version) {
-                case 100:
+                case 1:
+                    //把DownloaderManager历次数据库版本升级，简单合到一起
                     createDownloadsTable(db);
-                    break;
-
-                case 101:
                     createHeadersTable(db);
-                    break;
-
-                case 102:
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_IS_PUBLIC_API,
                             "INTEGER NOT NULL DEFAULT 0");
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_ALLOW_ROAMING,
                             "INTEGER NOT NULL DEFAULT 0");
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_ALLOWED_NETWORK_TYPES,
                             "INTEGER NOT NULL DEFAULT 0");
-                    break;
-
-                case 103:
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_IS_VISIBLE_IN_DOWNLOADS_UI,
                             "INTEGER NOT NULL DEFAULT 1");
                     makeCacheDownloadsInvisible(db);
-                    break;
-
-                case 104:
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_BYPASS_RECOMMENDED_SIZE_LIMIT,
                             "INTEGER NOT NULL DEFAULT 0");
-                    break;
-
-                case 105:
                     fillNullValues(db);
-                    break;
-
-                case 106:
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_MEDIAPROVIDER_URI, "TEXT");
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_DELETED,
                             "BOOLEAN NOT NULL DEFAULT 0");
-                    break;
-
-                case 107:
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_ERROR_MSG, "TEXT");
-                    break;
-
-                case 108:
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_ALLOW_METERED,
                             "INTEGER NOT NULL DEFAULT 1");
-                    break;
-
-                case 109:
                     addColumn(db, DB_TABLE, Downloads.Impl.COLUMN_ALLOW_WRITE,
                             "BOOLEAN NOT NULL DEFAULT 0");
                     break;
@@ -407,10 +340,7 @@ public final class DownloadProvider extends ContentProvider {
         mHandler = new Handler();
 
         mOpenHelper = new DatabaseHelper(getContext());
-        // Initialize the system uid
         mSystemUid = Process.SYSTEM_UID;
-        // Initialize the default container uid. Package name hardcoded
-        // for now.
         ApplicationInfo appInfo = null;
         try {
             appInfo = getContext().getPackageManager().
@@ -426,10 +356,6 @@ public final class DownloadProvider extends ContentProvider {
         return true;
     }
 
-    /**
-     * Returns the content-provider-style MIME types of the various
-     * types accessible through this content provider.
-     */
     @Override
     public String getType(final Uri uri) {
         int match = sURIMatcher.match(uri);
@@ -463,22 +389,17 @@ public final class DownloadProvider extends ContentProvider {
         }
     }
 
-    /**
-     * Inserts a row in the database
-     */
     @Override
     public Uri insert(final Uri uri, final ContentValues values) {
-        checkInsertPermissions(values);
+//        checkInsertPermissions(values);
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
-        // note we disallow inserting into ALL_DOWNLOADS
         int match = sURIMatcher.match(uri);
         if (match != MY_DOWNLOADS) {
             Log.d(Constants.TAG, "calling insert on an unknown/invalid URI: " + uri);
             throw new IllegalArgumentException("Unknown/Invalid URI " + uri);
         }
 
-        // copy some of the input values as it
         ContentValues filteredValues = new ContentValues();
         copyString(Downloads.Impl.COLUMN_URI, values, filteredValues);
         copyString(Downloads.Impl.COLUMN_APP_DATA, values, filteredValues);
@@ -540,17 +461,10 @@ public final class DownloadProvider extends ContentProvider {
         } else {
             filteredValues.put(Downloads.Impl.COLUMN_VISIBILITY, vis);
         }
-        // copy the control column as is
         copyInteger(Downloads.Impl.COLUMN_CONTROL, values, filteredValues);
 
-        /*
-         * requests coming from
-         * DownloadManager.addCompletedDownload(String, String, String,
-         * boolean, String, String, long) need special treatment
-         */
         if (values.getAsInteger(Downloads.Impl.COLUMN_DESTINATION) ==
                 Downloads.Impl.DESTINATION_NON_DOWNLOADMANAGER_DOWNLOAD) {
-            // these requests always are marked as 'completed'
             filteredValues.put(Downloads.Impl.COLUMN_STATUS, Downloads.Impl.STATUS_SUCCESS);
             filteredValues.put(Downloads.Impl.COLUMN_TOTAL_BYTES,
                     values.getAsLong(Downloads.Impl.COLUMN_TOTAL_BYTES));
@@ -793,9 +707,6 @@ public final class DownloadProvider extends ContentProvider {
         }
     }
 
-    /**
-     * Starts a database query
-     */
     @Override
     public Cursor query(final Uri uri, String[] projection,
                         final String selection, final String[] selectionArgs,
@@ -914,9 +825,6 @@ public final class DownloadProvider extends ContentProvider {
         return uri.getPathSegments().get(1);
     }
 
-    /**
-     * Insert request headers for a download into the DB.
-     */
     private void insertRequestHeaders(SQLiteDatabase db, long downloadId, ContentValues values) {
         ContentValues rowValues = new ContentValues();
         rowValues.put(Downloads.Impl.RequestHeaders.COLUMN_DOWNLOAD_ID, downloadId);
@@ -974,9 +882,6 @@ public final class DownloadProvider extends ContentProvider {
                 callingUid != mDefContainerUid;
     }
 
-    /**
-     * Updates a row in the database
-     */
     @Override
     public int update(final Uri uri, final ContentValues values,
                       final String where, final String[] whereArgs) {
@@ -1101,9 +1006,6 @@ public final class DownloadProvider extends ContentProvider {
         return selection;
     }
 
-    /**
-     * Deletes a row in the database
-     */
     @Override
     public int delete(final Uri uri, final String where,
                       final String[] whereArgs) {
@@ -1263,8 +1165,6 @@ public final class DownloadProvider extends ContentProvider {
     }
 
     private void logVerboseOpenFileInfo(Uri uri, String mode) {
-        Log.v(TAG, "openFile uri: " + uri + ", mode: " + mode
-                + ", uid: " + Binder.getCallingUid());
         Cursor cursor = query(Downloads.Impl.CONTENT_URI,
                 new String[]{"_id"}, null, null, "_id");
         if (cursor == null) {
