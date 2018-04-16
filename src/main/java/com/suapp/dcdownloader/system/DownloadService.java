@@ -117,9 +117,6 @@ public class DownloadService extends Service {
     private static ExecutorService buildDownloadExecutor() {
         final int maxConcurrent = Resources.getSystem().getInteger(
                 com.android.internal.R.integer.config_MaxConcurrentDownloadsAllowed);
-
-        // Create a bounded thread pool for executing downloads; it creates
-        // threads as needed (up to maximum) and reclaims them when finished.
         final ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 maxConcurrent, maxConcurrent, 10, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>()) {
@@ -318,18 +315,8 @@ public class DownloadService extends Service {
             }
 
             if (isActive) {
-                // Still doing useful work, keep service alive. These active
-                // tasks will trigger another update pass when they're finished.
-
-                // Enqueue delayed update pass to catch finished operations that
-                // didn't trigger an update pass; these are bugs.
                 enqueueFinalUpdate();
-
             } else {
-                // No active tasks, and any pending update messages can be
-                // ignored, since any updates important enough to initiate tasks
-                // will always be delivered with a new startId.
-
                 if (stopSelfResult(startId)) {
                     if (DEBUG_LIFECYCLE) Log.v(TAG, "Nothing left; stopped");
                     getContentResolver().unregisterContentObserver(mObserver);
