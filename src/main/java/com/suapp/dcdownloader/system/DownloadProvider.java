@@ -367,7 +367,6 @@ public final class DownloadProvider extends ContentProvider {
             case MY_DOWNLOADS_ID:
             case ALL_DOWNLOADS_ID:
             case PUBLIC_DOWNLOAD_ID: {
-                // return the mimetype of this id from the database
                 final String id = getDownloadIdFromUri(uri);
                 final SQLiteDatabase db = mOpenHelper.getReadableDatabase();
                 final String mimeType = DatabaseUtils.stringForQuery(db,
@@ -408,28 +407,30 @@ public final class DownloadProvider extends ContentProvider {
         copyString(Downloads.Impl.COLUMN_MIME_TYPE, values, filteredValues);
         copyBoolean(Downloads.Impl.COLUMN_IS_PUBLIC_API, values, filteredValues);
 
-        boolean isPublicApi =
-                values.getAsBoolean(Downloads.Impl.COLUMN_IS_PUBLIC_API) == Boolean.TRUE;
+        //暂去除权限限制
+//        boolean isPublicApi =
+//                values.getAsBoolean(Downloads.Impl.COLUMN_IS_PUBLIC_API) == Boolean.TRUE;
 
-        // validate the destination column
         Integer dest = values.getAsInteger(Downloads.Impl.COLUMN_DESTINATION);
         if (dest != null) {
-            if (getContext().checkCallingOrSelfPermission(Downloads.Impl.PERMISSION_ACCESS_ADVANCED)
-                    != PackageManager.PERMISSION_GRANTED
-                    && (dest == Downloads.Impl.DESTINATION_CACHE_PARTITION
+            //去掉检查权限
+//            if (getContext().checkCallingOrSelfPermission(Downloads.Impl.PERMISSION_ACCESS_ADVANCED)
+//                    != PackageManager.PERMISSION_GRANTED
+//                    && (dest == Downloads.Impl.DESTINATION_CACHE_PARTITION
+            if ((dest == Downloads.Impl.DESTINATION_CACHE_PARTITION
                     || dest == Downloads.Impl.DESTINATION_CACHE_PARTITION_NOROAMING
                     || dest == Downloads.Impl.DESTINATION_SYSTEMCACHE_PARTITION)) {
                 throw new SecurityException("setting destination to : " + dest +
                         " not allowed, unless PERMISSION_ACCESS_ADVANCED is granted");
             }
-            // for public API behavior, if an app has CACHE_NON_PURGEABLE permission, automatically
-            // switch to non-purgeable download
-            boolean hasNonPurgeablePermission =
-                    getContext().checkCallingOrSelfPermission(
-                            Downloads.Impl.PERMISSION_CACHE_NON_PURGEABLE)
-                            == PackageManager.PERMISSION_GRANTED;
-            if (isPublicApi && dest == Downloads.Impl.DESTINATION_CACHE_PARTITION_PURGEABLE
-                    && hasNonPurgeablePermission) {
+            // 暂去掉权限限制
+//            boolean hasNonPurgeablePermission =
+//                    getContext().checkCallingOrSelfPermission(
+//                            Downloads.Impl.PERMISSION_CACHE_NON_PURGEABLE)
+//                            == PackageManager.PERMISSION_GRANTED;
+//            if (isPublicApi &&
+            if (dest == Downloads.Impl.DESTINATION_CACHE_PARTITION_PURGEABLE) {
+//                    && hasNonPurgeablePermission) {
                 dest = Downloads.Impl.DESTINATION_CACHE_PARTITION;
             }
             if (dest == Downloads.Impl.DESTINATION_FILE_URI) {
@@ -482,10 +483,11 @@ public final class DownloadProvider extends ContentProvider {
         long lastMod = mSystemFacade.currentTimeMillis();
         filteredValues.put(Downloads.Impl.COLUMN_LAST_MODIFICATION, lastMod);
 
-        // use packagename of the caller to set the notification columns
+        // 用调用者的包名去设置 notification columns
         String pckg = values.getAsString(Downloads.Impl.COLUMN_NOTIFICATION_PACKAGE);
         String clazz = values.getAsString(Downloads.Impl.COLUMN_NOTIFICATION_CLASS);
-        if (pckg != null && (clazz != null || isPublicApi)) {
+        if (pckg != null && clazz != null) {
+//                || isPublicApi)) {
             int uid = Binder.getCallingUid();
             try {
                 if (uid == 0 || mSystemFacade.userOwnsPackage(uid, pckg)) {
@@ -528,12 +530,12 @@ public final class DownloadProvider extends ContentProvider {
             filteredValues.put(Downloads.Impl.COLUMN_IS_VISIBLE_IN_DOWNLOADS_UI, isExternal);
         }
 
-        // public api requests and networktypes/roaming columns
-        if (isPublicApi) {
+        // 暂时去掉权限限制
+//        if (isPublicApi) {
             copyInteger(Downloads.Impl.COLUMN_ALLOWED_NETWORK_TYPES, values, filteredValues);
             copyBoolean(Downloads.Impl.COLUMN_ALLOW_ROAMING, values, filteredValues);
             copyBoolean(Downloads.Impl.COLUMN_ALLOW_METERED, values, filteredValues);
-        }
+//        }
 
         if (Constants.LOGVV) {
             Log.v(Constants.TAG, "initiating download with UID "
